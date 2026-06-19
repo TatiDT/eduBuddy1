@@ -102,12 +102,11 @@ const perfil = (req, res) => {
 
         const estudiante = estudiantes[0];
 
+        // Carga TODOS los cursos (no solo los inscritos) para que el estudiante vea lo que carga el admin
         db.query(
-            `SELECT c.id_curso, c.codigo, c.nombre, c.creditos
-             FROM inscripcion i
-             JOIN curso c ON c.id_curso = i.id_curso
-             WHERE i.id_estudiante = ?`,
-            [estudiante.id_estudiante],
+            `SELECT c.id_curso, c.codigo, c.nombre, c.creditos, c.modo_calculo
+             FROM curso c
+             ORDER BY c.id_curso`,
             (err, materias) => {
                 if (err) {
                     res.status(500).json({ error: 'Error al obtener las materias' });
@@ -120,12 +119,17 @@ const perfil = (req, res) => {
 
                 const idsCursos = materias.map((m) => m.id_curso);
 
+                // Carga evaluaciones del admin (id_estudiante_creador IS NULL) +
+                // evaluaciones personales del estudiante
                 db.query(
-                    `SELECT e.id_evaluacion, e.id_curso, e.nombre, e.tipo, e.porcentaje, e.fecha, n.calificacion AS nota
+                    `SELECT e.id_evaluacion, e.id_curso, e.nombre, e.tipo, e.porcentaje, e.fecha,
+                            e.id_estudiante_creador, n.calificacion AS nota
                      FROM evaluacion e
                      LEFT JOIN nota n ON n.id_evaluacion = e.id_evaluacion AND n.id_estudiante = ?
-                     WHERE e.id_curso IN (?)`,
-                    [estudiante.id_estudiante, idsCursos],
+                     WHERE e.id_curso IN (?)
+                       AND (e.id_estudiante_creador IS NULL OR e.id_estudiante_creador = ?)
+                     ORDER BY e.fecha`,
+                    [estudiante.id_estudiante, idsCursos, estudiante.id_estudiante],
                     (err, evaluaciones) => {
                         if (err) {
                             res.status(500).json({ error: 'Error al obtener las evaluaciones' });

@@ -11,7 +11,7 @@ CREATE TABLE profesor (id_profesor INT AUTO_INCREMENT PRIMARY KEY,nombre VARCHAR
 
 
 CREATE TABLE curso (id_curso INT AUTO_INCREMENT PRIMARY KEY,codigo VARCHAR(20) UNIQUE NOT NULL,nombre VARCHAR(100) NOT NULL,
-    creditos INT NOT NULL,id_profesor INT,FOREIGN KEY (id_profesor) REFERENCES profesor(id_profesor));
+    creditos INT NOT NULL,modo_calculo ENUM('promedio','porcentaje') DEFAULT 'promedio',id_profesor INT,FOREIGN KEY (id_profesor) REFERENCES profesor(id_profesor));
 
 
 CREATE TABLE inscripcion (id_inscripcion INT AUTO_INCREMENT PRIMARY KEY,id_estudiante INT NOT NULL,id_curso INT NOT NULL,
@@ -41,10 +41,11 @@ CREATE TABLE evaluacion (
         'Trabajo',
         'Examen'
     ) NOT NULL,
-    porcentaje DECIMAL(5,2) NOT NULL,
+    porcentaje DECIMAL(5,2) NULL DEFAULT NULL,
     fecha DATE NOT NULL,
-
-    FOREIGN KEY (id_curso) REFERENCES curso(id_curso));
+    id_estudiante_creador INT NULL DEFAULT NULL,
+    FOREIGN KEY (id_curso) REFERENCES curso(id_curso),
+    FOREIGN KEY (id_estudiante_creador) REFERENCES estudiante(id_estudiante));
 
 
 CREATE TABLE nota (id_nota INT AUTO_INCREMENT PRIMARY KEY,id_estudiante INT NOT NULL,id_evaluacion INT NOT NULL,

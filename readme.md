@@ -1,6 +1,6 @@
 
 Integrantes:
-Tatiana Abarca Urra: Cree el readme, Hice el login.html completo y validaciones simples, diseñe la base de datos e inserte datos de prueba, para completar el flujo del login tambien hice el authController.js para el modelo de autenticacion. Corregi errores, 
+Tatiana Abarca Urra: Cree el readme, Hice el login.html completo y validaciones simples, diseñe la base de datos e inserte datos de prueba, para completar el flujo del login tambien hice el authController.js para el modelo de autenticacion. Corregi errores de manera general y no sabria especificar pero en todas las carpeta MVC realize cambios generales. 
 Ana Belen Campos
 Demian Abarzua
 
@@ -70,6 +70,6 @@ eduBuddy1/
 │   └── img/                       # Logo y mascota usados en el login
 │
 └── views/
-    └── admin.html                 # Panel del administrador: CRUD completo de estudiantes, materias, profesores y evaluaciones/notas
+    └── admin.html                 # Panel del administrador: CRUD completo admin, materias, profesores y evaluaciones/notas
 
 

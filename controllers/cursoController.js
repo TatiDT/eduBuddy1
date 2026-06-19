@@ -4,7 +4,7 @@ const db = require('../config/db');
 
 const listar = (req, res) => {
     db.query(
-        `SELECT c.id_curso, c.codigo, c.nombre, c.creditos, c.id_profesor,
+        `SELECT c.id_curso, c.codigo, c.nombre, c.creditos, c.modo_calculo, c.id_profesor,
                 p.nombre AS profesor_nombre, p.apellido AS profesor_apellido
          FROM curso c
          LEFT JOIN profesor p ON p.id_profesor = c.id_profesor
@@ -21,22 +21,24 @@ const listar = (req, res) => {
 
 
 const agregar = (req, res) => {
-    const { codigo, nombre, creditos, id_profesor } = req.body;
+    const { codigo, nombre, creditos, modo_calculo, id_profesor } = req.body;
 
     if (!codigo || !nombre || !creditos) {
         res.status(400).json({ error: 'Codigo, nombre y creditos son obligatorios' });
         return;
     }
 
+    const modo = modo_calculo === 'porcentaje' ? 'porcentaje' : 'promedio';
+
     db.query(
-        'INSERT INTO curso (codigo, nombre, creditos, id_profesor) VALUES (?, ?, ?, ?)',
-        [codigo, nombre, creditos, id_profesor || null],
+        'INSERT INTO curso (codigo, nombre, creditos, modo_calculo, id_profesor) VALUES (?, ?, ?, ?, ?)',
+        [codigo, nombre, creditos, modo, id_profesor || null],
         (err, resultado) => {
             if (err) {
                 res.status(500).json({ error: 'Error al registrar la materia' });
                 return;
             }
-            res.status(201).json({ id_curso: resultado.insertId, codigo, nombre, creditos, id_profesor: id_profesor || null });
+            res.status(201).json({ id_curso: resultado.insertId, codigo, nombre, creditos, modo_calculo: modo, id_profesor: id_profesor || null });
         }
     );
 };

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
@@ -354,6 +354,10 @@
           <input type="number" id="curso-creditos" min="1" placeholder="Creditos"/>
         </div>
         <div class="form-row cols-2">
+          <select id="curso-modo">
+            <option value="promedio">Promedio simple</option>
+            <option value="porcentaje">Por porcentaje</option>
+          </select>
           <select id="curso-profesor"></select>
         </div>
         <div class="form-actions">
@@ -365,7 +369,7 @@
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>Codigo</th><th>Nombre</th><th>Creditos</th><th>Profesor</th><th>Acciones</th></tr>
+            <tr><th>Codigo</th><th>Nombre</th><th>Creditos</th><th>Modo</th><th>Profesor</th><th>Acciones</th></tr>
           </thead>
           <tbody id="tabla-materias"></tbody>
         </table>
@@ -423,7 +427,7 @@
             <option value="Trabajo">Trabajo</option>
             <option value="Examen">Examen</option>
           </select>
-          <input type="number" id="eval-porcentaje" min="1" max="100" placeholder="Porcentaje %"/>
+          <input type="number" id="eval-porcentaje" min="1" max="100" placeholder="Porcentaje %" style="display:none;"/>
           <input type="date" id="eval-fecha"/>
         </div>
         <div class="form-actions">
@@ -504,6 +508,17 @@ function setNav(section) {
 }
 
 
+function actualizarCampoPorcentaje() {
+  var sel = document.getElementById('eval-curso');
+  if (!sel) return;
+  var id = parseInt(sel.value, 10);
+  var curso = CURSOS.find(function(c){ return c.id_curso === id; });
+  var pctInput = document.getElementById('eval-porcentaje');
+  var esPorcentaje = curso && curso.modo_calculo === 'porcentaje';
+  pctInput.style.display = esPorcentaje ? '' : 'none';
+  if (!esPorcentaje) pctInput.value = '';
+}
+
 function cargarTodo() {
   Promise.all([
     fetch('/api/estudiantes').then(function(r){ return r.json(); }),
@@ -532,6 +547,8 @@ function poblarSelectsDependientes() {
 
   var selEvalCurso = document.getElementById('eval-curso');
   selEvalCurso.innerHTML = CURSOS.map(function(c){ return '<option value="' + c.id_curso + '">' + c.codigo + ' - ' + c.nombre + '</option>'; }).join('');
+  selEvalCurso.onchange = actualizarCampoPorcentaje;
+  actualizarCampoPorcentaje();
 }
 
 function toggleForm(tipo, show) {
@@ -551,6 +568,7 @@ function limpiarFormulario(tipo) {
     editandoCursoId = null;
     document.getElementById('form-curso-title').textContent = 'Nueva materia';
     ['curso-codigo','curso-nombre','curso-creditos'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('curso-modo').value = 'promedio';
     document.getElementById('curso-profesor').value = '';
   } else if (tipo === 'profesor') {
     editandoProfesorId = null;
@@ -662,10 +680,12 @@ function renderMaterias() {
   }
   tbody.innerHTML = CURSOS.map(function(c){
     var profesor = c.profesor_nombre ? (c.profesor_nombre + ' ' + c.profesor_apellido) : '-';
+    var modo = c.modo_calculo === 'porcentaje' ? 'Por porcentaje' : 'Promedio simple';
     return '<tr>' +
       '<td>' + c.codigo + '</td>' +
       '<td>' + c.nombre + '</td>' +
       '<td>' + c.creditos + '</td>' +
+      '<td>' + modo + '</td>' +
       '<td>' + profesor + '</td>' +
       '<td><div class="row-actions">' +
         '<button class="icon-btn edit" onclick="editarCurso(' + c.id_curso + ')" title="Editar">&#9998;</button>' +
@@ -683,6 +703,7 @@ function editarCurso(id) {
   document.getElementById('curso-codigo').value = c.codigo;
   document.getElementById('curso-nombre').value = c.nombre;
   document.getElementById('curso-creditos').value = c.creditos;
+  document.getElementById('curso-modo').value = c.modo_calculo || 'promedio';
   document.getElementById('curso-profesor').value = c.id_profesor || '';
   toggleForm('curso', true);
 }
@@ -692,6 +713,7 @@ function guardarCurso() {
     codigo: document.getElementById('curso-codigo').value.trim(),
     nombre: document.getElementById('curso-nombre').value.trim(),
     creditos: parseInt(document.getElementById('curso-creditos').value, 10),
+    modo_calculo: document.getElementById('curso-modo').value,
     id_profesor: document.getElementById('curso-profesor').value ? parseInt(document.getElementById('curso-profesor').value, 10) : null
   };
   if (!body.codigo || !body.nombre || !body.creditos) {
@@ -815,7 +837,7 @@ function renderEvaluaciones() {
       '<td>' + ev.curso_codigo + ' - ' + ev.curso_nombre + '</td>' +
       '<td>' + ev.nombre + '</td>' +
       '<td>' + ev.tipo + '</td>' +
-      '<td>' + parseFloat(ev.porcentaje) + '%</td>' +
+      '<td>' + (ev.porcentaje !== null && ev.porcentaje !== undefined ? parseFloat(ev.porcentaje) + '%' : '-') + '</td>' +
       '<td>' + String(ev.fecha).slice(0,10) + '</td>' +
       '<td><div class="row-actions">' +
         '<button class="icon-btn grades" onclick="verNotas(' + ev.id_evaluacion + ')" title="Ver notas">&#128202;</button>' +
@@ -834,23 +856,34 @@ function editarEvaluacion(id) {
   document.getElementById('eval-curso').value = ev.id_curso;
   document.getElementById('eval-nombre').value = ev.nombre;
   document.getElementById('eval-tipo').value = ev.tipo;
-  document.getElementById('eval-porcentaje').value = parseFloat(ev.porcentaje);
+  document.getElementById('eval-porcentaje').value = ev.porcentaje !== null && ev.porcentaje !== undefined ? parseFloat(ev.porcentaje) : '';
+  actualizarCampoPorcentaje();
   document.getElementById('eval-fecha').value = String(ev.fecha).slice(0,10);
   toggleForm('evaluacion', true);
 }
 
 function guardarEvaluacion() {
-  var body = {
-    id_curso: parseInt(document.getElementById('eval-curso').value, 10),
-    nombre: document.getElementById('eval-nombre').value.trim(),
-    tipo: document.getElementById('eval-tipo').value,
-    porcentaje: parseFloat(document.getElementById('eval-porcentaje').value),
-    fecha: document.getElementById('eval-fecha').value
-  };
-  if (!body.id_curso || !body.nombre || isNaN(body.porcentaje) || body.porcentaje <= 0 || body.porcentaje > 100 || !body.fecha) {
-    showToast('Completa todos los campos con valores validos', 'err');
+  var id_curso = parseInt(document.getElementById('eval-curso').value, 10);
+  var nombre   = document.getElementById('eval-nombre').value.trim();
+  var tipo     = document.getElementById('eval-tipo').value;
+  var fecha    = document.getElementById('eval-fecha').value;
+
+  if (!id_curso || !nombre || !fecha) {
+    showToast('Completa materia, nombre y fecha', 'err');
     return;
   }
+
+  var curso = CURSOS.find(function(c){ return c.id_curso === id_curso; });
+  var porcentaje = null;
+  if (curso && curso.modo_calculo === 'porcentaje') {
+    porcentaje = parseFloat(document.getElementById('eval-porcentaje').value);
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) {
+      showToast('El porcentaje debe estar entre 1 y 100', 'err');
+      return;
+    }
+  }
+
+  var body = { id_curso: id_curso, nombre: nombre, tipo: tipo, porcentaje: porcentaje, fecha: fecha };
 
   var esEdicion = editandoEvaluacionId !== null;
   var url = esEdicion ? '/api/evaluaciones/' + editandoEvaluacionId : '/api/evaluaciones';
