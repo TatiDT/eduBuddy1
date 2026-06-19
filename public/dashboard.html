@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduBuddy — Dashboard</title>
+  <meta name="description" content="Panel principal del estudiante EduBuddy. Consulta tus materias, ingresa notas y calcula tu promedio general."/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky:    #5BB8E8;
+      --blue:   #2E86C1;
+      --deep:   #1C3A4F;
+      --light:  #EBF6FD;
+      --card:   #fff;
+      --muted:  #6B92A8;
+      --border: #D6EEF8;
+      --green:  #27AE60;
+      --red:    #E74C3C;
+      --yellow: #F39C12;
+      --purple: #8E44AD;
+      --grad:   linear-gradient(135deg, #5BB8E8, #2E86C1);
+      --radius: 18px;
+      --shadow: 0 6px 28px rgba(30,90,140,.11);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #E8F4FC;
+      min-height: 100vh;
+      display: flex;
+      color: var(--deep);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 72px;
+      background: var(--grad);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px 0 28px;
+      gap: 10px;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      box-shadow: 4px 0 20px rgba(46,134,193,.2);
+    }
+    .sidebar .logo {
+      width: 42px; height: 42px;
+      background: rgba(255,255,255,.22);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: .75rem;
+      color: #fff;
+      letter-spacing: -.5px;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .nav-btn {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.65);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s, transform .15s;
+      position: relative;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background: rgba(255,255,255,.22);
+      color: #fff;
+      transform: scale(1.08);
+    }
+    .nav-btn .tooltip {
+      position: absolute;
+      left: calc(100% + 12px);
+      background: var(--deep);
+      color: #fff;
+      font-size: .72rem;
+      font-family: 'Inter', sans-serif;
+      padding: 4px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+      z-index: 200;
+    }
+    .nav-btn:hover .tooltip { opacity: 1; }
+    .sidebar .spacer { flex: 1; }
+    .logout-btn {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.7);
+      font-size: .72rem;
+      font-family: 'Inter', sans-serif;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: color .2s;
+    }
+    .logout-btn:hover { color: #fff; }
+
+    /* MAIN LAYOUT */
+    .main {
+      margin-left: 72px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+      min-height: 100vh;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 28px;
+      background: rgba(255,255,255,.7);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-greeting h2 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--deep);
+    }
+    .topbar-greeting p { font-size: .78rem; color: var(--muted); }
+    .search-wrap {
+      flex: 1;
+      max-width: 380px;
+      margin-left: auto;
+      position: relative;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: .88rem;
+      background: var(--light);
+      color: var(--deep);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-wrap input:focus {
+      border-color: var(--sky);
+      box-shadow: 0 0 0 4px rgba(91,184,232,.12);
+      background: #fff;
+    }
+
+    /* CONTENT AREA */
+    .content { padding: 26px 28px; overflow-y: auto; }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .hero-welcome {
+      background: var(--grad);
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-welcome::after {
+      content: '\1F393';
+      position: absolute;
+      right: 20px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 3.5rem;
+      opacity: .35;
+    }
+    .hero-welcome h3 { font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .hero-welcome p { font-size: .82rem; opacity: .85; margin-bottom: 16px; }
+    .hero-welcome .btn-hero {
+      background: rgba(255,255,255,.22);
+      border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .hero-welcome .btn-hero:hover { background: rgba(255,255,255,.35); }
+
+    .hero-tasks {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+    }
+    .hero-tasks h4 { font-family: 'Poppins', sans-serif; font-size: .9rem; font-weight: 700; margin-bottom: 6px; color: var(--deep); }
+    .hero-tasks p.sub { font-size: .73rem; color: var(--muted); margin-bottom: 14px; }
+    .task-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: .82rem; }
+    .task-item:last-child { border-bottom: none; }
+    .task-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .task-item span { flex: 1; color: var(--deep); font-weight: 500; }
+    .task-item small { color: var(--muted); font-size: .72rem; }
+
+    /* Quick cards */
+    .quick-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .qcard {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform .2s, box-shadow .2s;
+      border: 2px solid transparent;
+    }
+    .qcard:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(30,90,140,.15); border-color: var(--sky); }
+    .qcard-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem; }
+    .qcard h5 { font-family: 'Poppins', sans-serif; font-size: .9rem; font-weight: 700; color: var(--deep); margin-bottom: 4px; }
+    .qcard p { font-size: .73rem; color: var(--muted); }
+
+    /* PANELS */
+    .panel-section { display: none; animation: fadeIn .3s ease; }
+    .panel-section.visible { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem; font-weight: 700; color: var(--deep);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title span { font-size: 1.1rem; }
+
+    /* NOTAS PANEL */
+    .calc-box { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .calc-box h4 { font-family: 'Poppins', sans-serif; font-size: .95rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    .mode-toggle { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .mode-btn {
+      padding: 7px 18px; border-radius: 10px; border: 2px solid var(--border);
+      background: var(--light); font-size: .8rem; font-weight: 600; cursor: pointer;
+      transition: all .2s; color: var(--muted);
+    }
+    .mode-btn.active { background: var(--grad); color: #fff; border-color: transparent; }
+
+    .grades-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .grade-row { display: grid; gap: 10px; align-items: center; }
+    .grade-row.simple  { grid-template-columns: 1fr 100px 36px; }
+    .grade-row.pct     { grid-template-columns: 1fr 100px 80px 36px; }
+    .grade-row input, .grade-row select {
+      width: 100%; padding: 9px 12px; border: 2px solid var(--border); border-radius: 10px;
+      font-family: 'Inter', sans-serif; font-size: .83rem; color: var(--deep);
+      background: var(--light); outline: none; transition: border-color .2s;
+    }
+    .grade-row input:focus { border-color: var(--sky); background: #fff; }
+    .grade-header { display: grid; gap: 10px; align-items: center; margin-bottom: 4px; }
+    .grade-header.simple  { grid-template-columns: 1fr 100px 36px; }
+    .grade-header.pct     { grid-template-columns: 1fr 100px 80px 36px; }
+    .col-label { font-size: .75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .del-btn {
+      width: 36px; height: 36px; border: none; background: #fdecea; color: var(--red);
+      border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s; font-size: 1rem;
+    }
+    .del-btn:hover { background: #f9c0bb; }
+
+    .add-grade-btn {
+      background: none; border: 2px dashed var(--border); border-radius: 10px; padding: 9px;
+      width: 100%; color: var(--sky); font-size: .83rem; font-weight: 600; cursor: pointer;
+      transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .add-grade-btn:hover { border-color: var(--sky); background: var(--light); }
+
+    .calc-result {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--light); border-radius: 14px; padding: 18px 22px; margin-top: 16px;
+    }
+    .calc-result .label { font-size: .82rem; color: var(--muted); font-weight: 500; }
+    .calc-result .value { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 800; }
+    .calc-result .value.pass { color: var(--green); }
+    .calc-result .value.fail { color: var(--red); }
+    .calc-result .value.warn { color: var(--yellow); }
+    .badge { padding: 5px 14px; border-radius: 20px; font-size: .75rem; font-weight: 700; }
+    .badge.pass { background: #d5f5e3; color: var(--green); }
+    .badge.fail { background: #fdecea; color: var(--red); }
+    .badge.warn { background: #fef9e7; color: var(--yellow); }
+
+    .calc-btn {
+      width: 100%; padding: 13px; background: var(--grad); color: #fff; border: none;
+      border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: .95rem; font-weight: 700;
+      cursor: pointer; margin-top: 14px; transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 6px 20px rgba(46,134,193,.3);
+    }
+    .calc-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(46,134,193,.4); }
+
+    /* MATERIAS PANEL */
+    .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .subject-card {
+      background: var(--card); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s; cursor: pointer;
+    }
+    .subject-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(30,90,140,.15); }
+    .subject-banner { height: 7px; }
+    .subject-body { padding: 18px; }
+    .subject-code { font-size: .68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .subject-name { font-family: 'Poppins', sans-serif; font-size: .95rem; font-weight: 700; margin-bottom: 8px; color: var(--deep); }
+    .subject-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .subject-tag { padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 600; background: var(--light); color: var(--blue); }
+    .subject-avg { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); }
+    .subject-avg .avg-label { font-size: .73rem; color: var(--muted); }
+    .subject-avg .avg-val { font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 800; }
+    .subject-avg .avg-val.pass { color: var(--green); }
+    .subject-avg .avg-val.warn { color: var(--yellow); }
+    .subject-avg .avg-val.fail { color: var(--red); }
+    .subject-avg .avg-val.none { color: var(--muted); }
+
+    /* EVALUACIONES PANEL */
+    .eval-grid { display: flex; flex-direction: column; gap: 14px; }
+    .eval-card {
+      background: var(--card); border-radius: var(--radius); padding: 18px 22px;
+      box-shadow: var(--shadow); display: grid; grid-template-columns: 40px 1fr auto;
+      gap: 14px; align-items: center; transition: transform .2s;
+    }
+    .eval-card:hover { transform: translateX(4px); }
+    .eval-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .eval-info .eval-name { font-family: 'Poppins', sans-serif; font-size: .88rem; font-weight: 700; color: var(--deep); margin-bottom: 2px; }
+    .eval-info .eval-meta { font-size: .73rem; color: var(--muted); }
+    .eval-info .eval-course { font-size: .73rem; color: var(--sky); font-weight: 600; }
+    .eval-grade-wrap { display: flex; align-items: center; gap: 10px; }
+    .eval-grade-input {
+      width: 70px; padding: 8px 10px; border: 2px solid var(--border); border-radius: 10px;
+      font-family: 'Poppins', sans-serif; font-size: .95rem; font-weight: 700;
+      text-align: center; color: var(--deep); background: var(--light); outline: none; transition: border-color .2s;
+    }
+    .eval-grade-input:focus { border-color: var(--sky); background: #fff; }
+    .eval-save-btn {
+      padding: 8px 14px; background: var(--grad); color: #fff; border: none;
+      border-radius: 10px; font-size: .78rem; font-weight: 700; cursor: pointer; transition: transform .15s;
+    }
+    .eval-save-btn:hover { transform: scale(1.05); }
+    .eval-grade-badge { font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 800; min-width: 44px; text-align: center; }
+
+    /* RIGHT SIDEBAR */
+    .right-panel {
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(8px);
+      border-left: 1px solid var(--border);
+      padding: 26px 20px;
+      display: flex; flex-direction: column; gap: 22px; overflow-y: auto;
+    }
+
+    /* Profile card */
+    .profile-card { background: var(--card); border-radius: var(--radius); padding: 24px 20px; text-align: center; box-shadow: var(--shadow); }
+    .avatar-ring {
+      width: 72px; height: 72px; border-radius: 50%; background: var(--grad); padding: 3px;
+      margin: 0 auto 12px; position: relative;
+    }
+    .avatar-initials {
+      width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff;
+      background: var(--light); display: flex; align-items: center; justify-content: center;
+      font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--blue);
+    }
+    .profile-name { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700; color: var(--deep); margin-bottom: 2px; }
+    .profile-carrera { font-size: .73rem; color: var(--muted); margin-bottom: 2px; }
+    .profile-uni { font-size: .7rem; color: var(--sky); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 16px; }
+
+    .gpa-card { background: var(--grad); border-radius: 14px; padding: 16px 20px; text-align: center; }
+    .gpa-label { font-size: .73rem; color: rgba(255,255,255,.8); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .gpa-value { font-family: 'Poppins', sans-serif; font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 2px; }
+    .gpa-sub { font-size: .73rem; color: rgba(255,255,255,.75); }
+    .gpa-icon { font-size: 2rem; margin-bottom: 4px; }
+    .gpa-bar-wrap { margin-top: 10px; background: rgba(255,255,255,.2); border-radius: 20px; height: 6px; overflow: hidden; }
+    .gpa-bar { height: 100%; background: #fff; border-radius: 20px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+
+    /* Upcoming */
+    .upcoming-title { font-family: 'Poppins', sans-serif; font-size: .85rem; font-weight: 700; color: var(--deep); margin-bottom: 12px; }
+    .exam-item {
+      display: flex; gap: 12px; align-items: center; padding: 10px 14px;
+      background: var(--card); border-radius: 12px; margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(30,90,140,.07); cursor: pointer; transition: transform .15s;
+    }
+    .exam-item:hover { transform: translateX(3px); }
+    .exam-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .exam-info .exam-name { font-size: .82rem; font-weight: 700; color: var(--deep); margin-bottom: 1px; }
+    .exam-info .exam-date { font-size: .7rem; color: var(--muted); }
+    .exam-arrow { margin-left: auto; color: var(--muted); font-size: .8rem; }
+
+    /* Mini calendar */
+    .mini-cal { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .cal-header h5 { font-family: 'Poppins', sans-serif; font-size: .85rem; font-weight: 700; color: var(--deep); }
+    .cal-nav { background: none; border: none; cursor: pointer; color: var(--muted); font-size: .85rem; padding: 2px 6px; border-radius: 6px; transition: background .15s; }
+    .cal-nav:hover { background: var(--light); color: var(--blue); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+    .cal-day-name { font-size: .63rem; color: var(--muted); font-weight: 600; padding: 4px 0; text-transform: uppercase; }
+    .cal-day { font-size: .75rem; color: var(--deep); padding: 5px 2px; border-radius: 8px; cursor: pointer; transition: background .15s; position: relative; }
+    .cal-day:hover { background: var(--light); }
+    .cal-day.today { background: var(--grad); color: #fff; font-weight: 700; }
+    .cal-day.other-month { color: #c0d9e8; }
+    .cal-day.has-event::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--sky); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px); opacity: 0;
+      background: #fff; border-left: 4px solid var(--blue);
+      padding: 13px 22px; border-radius: 12px; font-size: .87rem;
+      font-weight: 500; color: var(--deep);
+      box-shadow: 0 8px 28px rgba(0,0,0,.12); z-index: 200;
+      transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .4s;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.ok { border-left-color: var(--green); }
+    .toast.err { border-left-color: var(--red); }
+
+    @media (max-width: 960px) { .main { grid-template-columns: 1fr; } .right-panel { display: none; } }
+    @media (max-width: 640px) { .hero { grid-template-columns: 1fr; } .quick-cards { grid-template-columns: 1fr 1fr 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">Edu<br>Buddy</div>
+
+  <button class="nav-btn active" id="nav-home" onclick="setNav('home')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div class="tooltip">Inicio</div>
+  </button>
+
+  <button class="nav-btn" id="nav-notas" onclick="setNav('notas')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <div class="tooltip">Calculadora de Notas</div>
+  </button>
+
+  <button class="nav-btn" id="nav-materias" onclick="setNav('materias')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <div class="tooltip">Mis Materias</div>
+  </button>
+
+  <button class="nav-btn" id="nav-evaluaciones" onclick="setNav('evaluaciones')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    <div class="tooltip">Planificacion de Pruebas y Examenes</div>
+  </button>
+
+  <button class="nav-btn" id="nav-perfil" onclick="setNav('perfil')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <div class="tooltip">Perfil</div>
+  </button>
+
+  <div class="spacer"></div>
+
+  <button class="logout-btn" onclick="cerrarSesion()">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-greeting">
+      <h2 id="greeting-name">Hola!</h2>
+      <p id="greeting-date"></p>
+    </div>
+    <div class="search-wrap">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Buscar materia, prueba..." oninput="handleSearch(this.value)"/>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- HOME PANEL -->
+    <section class="panel-section visible" id="panel-home">
+      <div class="hero">
+        <div class="hero-welcome">
+          <h3>Bienvenido de vuelta...</h3>
+          <p>Listo para seguir aprendiendo?<br>Revisa tus notas y proximas pruebas.</p>
+          <button class="btn-hero" onclick="setNav('notas')">Ver mis notas</button>
+        </div>
+        <div class="hero-tasks">
+          <h4>Proximas evaluaciones</h4>
+          <p class="sub">No olvides prepararte para estas fechas:</p>
+          <div id="home-upcoming-list"></div>
+        </div>
+      </div>
+      <div class="quick-cards">
+        <div class="qcard" onclick="setNav('notas')">
+          <div class="qcard-icon" style="background:#EBF6FD;">&#128221;</div>
+          <h5>Notas</h5>
+          <p>Mis calificaciones</p>
+        </div>
+        <div class="qcard" onclick="setNav('materias')">
+          <div class="qcard-icon" style="background:#EBF6FD;">&#128218;</div>
+          <h5>Materias</h5>
+          <p>Horario de clases</p>
+        </div>
+        <div class="qcard" onclick="setNav('evaluaciones')">
+          <div class="qcard-icon" style="background:#EBF6FD;">&#9989;</div>
+          <h5>Evaluaciones</h5>
+          <p>Planificacion de Pruebas y Examenes</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTAS PANEL -->
+    <section class="panel-section" id="panel-notas">
+      <div class="section-title"><span>&#128221;</span> Calculadora de Notas</div>
+      <div class="calc-box">
+        <h4>Modo de calculo</h4>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-promedio" onclick="setMode('promedio')">&#128202; Promedio Normal</button>
+          <button class="mode-btn" id="mode-porcentaje" onclick="setMode('porcentaje')">&#128200; Por Porcentaje</button>
+        </div>
+
+        <div class="grade-header simple" id="grade-header">
+          <div class="col-label">Evaluacion</div>
+          <div class="col-label">Nota (1.0 - 7.0)</div>
+          <div></div>
+        </div>
+
+        <div class="grades-list" id="grades-list"></div>
+
+        <button class="add-grade-btn" onclick="addGradeRow()">
+          + Agregar evaluacion
+        </button>
+
+        <button class="calc-btn" onclick="calcAverage()">Calcular promedio</button>
+
+        <div class="calc-result" id="calc-result" style="display:none">
+          <div>
+            <div class="label" id="result-label">Promedio</div>
+            <div class="value" id="result-value">-</div>
+          </div>
+          <div id="result-badge" class="badge">-</div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px;"><span>&#128218;</span> Promedio por Materia</div>
+      <div class="subjects-grid" id="subjects-in-notas"></div>
+    </section>
+
+    <!-- MATERIAS PANEL -->
+    <section class="panel-section" id="panel-materias">
+      <div class="section-title"><span>&#128218;</span> Mis Materias</div>
+      <div class="subjects-grid" id="subjects-grid"></div>
+    </section>
+
+    <!-- EVALUACIONES PANEL -->
+    <section class="panel-section" id="panel-evaluaciones">
+      <div class="section-title"><span>&#9989;</span> Planificacion de Pruebas y Examenes</div>
+
+      <div class="calc-box" id="eval-form-box" style="display:none;">
+        <h4>&#10133; Nueva evaluacion</h4>
+        <div class="grade-row" style="grid-template-columns:1fr;margin-bottom:10px;">
+          <select id="eval-form-curso"></select>
+        </div>
+        <div class="grade-row" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+          <input type="text" id="eval-form-nombre" placeholder="Nombre (ej: Prueba 1)"/>
+          <select id="eval-form-tipo">
+            <option value="Prueba">Prueba</option>
+            <option value="Control">Control</option>
+            <option value="Tarea">Tarea</option>
+            <option value="Trabajo">Trabajo</option>
+            <option value="Examen">Examen</option>
+          </select>
+        </div>
+        <div class="grade-row" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+          <input type="number" id="eval-form-porcentaje" min="1" max="100" step="1" placeholder="Porcentaje % (ej: 30)"/>
+          <input type="date" id="eval-form-fecha"/>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="calc-btn" style="margin-top:0;" onclick="guardarEvaluacion()">Guardar evaluacion</button>
+          <button class="add-grade-btn" style="width:auto;padding:9px 18px;" onclick="toggleEvalForm(false)">Cancelar</button>
+        </div>
+      </div>
+
+      <button class="add-grade-btn" id="add-eval-toggle-btn" style="margin-bottom:18px;" onclick="toggleEvalForm(true)">
+        + Agregar evaluacion
+      </button>
+
+      <div class="mode-toggle" style="margin-bottom:18px;" id="eval-filters">
+        <button class="mode-btn active" onclick="filterEvals('Todos', this)">Todos</button>
+        <button class="mode-btn" onclick="filterEvals('Examen', this)">Examen</button>
+        <button class="mode-btn" onclick="filterEvals('Prueba', this)">Prueba</button>
+        <button class="mode-btn" onclick="filterEvals('Control', this)">Control</button>
+        <button class="mode-btn" onclick="filterEvals('Tarea', this)">Tarea</button>
+        <button class="mode-btn" onclick="filterEvals('Trabajo', this)">Trabajo</button>
+      </div>
+      <div class="eval-grid" id="eval-grid"></div>
+    </section>
+
+    <!-- PERFIL PANEL -->
+    <section class="panel-section" id="panel-perfil">
+      <div class="section-title"><span>&#128100;</span> Mi Perfil</div>
+      <div style="background:var(--card);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);max-width:480px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div class="avatar-ring" style="width:90px;height:90px;margin:0 auto 16px;">
+            <div class="avatar-initials" id="perfil-initials">AS</div>
+          </div>
+          <div class="profile-name" id="perfil-name" style="font-size:1.3rem">-</div>
+          <div class="profile-carrera" id="perfil-carrera">-</div>
+          <div class="profile-uni" id="perfil-uni">-</div>
+        </div>
+        <div class="gpa-card">
+          <div class="gpa-icon">&#127891;</div>
+          <div class="gpa-label">Promedio General</div>
+          <div class="gpa-value" id="perfil-gpa">-</div>
+          <div class="gpa-sub">Calculado sobre todas las materias</div>
+          <div class="gpa-bar-wrap"><div class="gpa-bar" id="perfil-gpa-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <div class="profile-card">
+      <div class="avatar-ring">
+        <div class="avatar-initials" id="right-initials">AS</div>
+      </div>
+      <div class="profile-name" id="right-name">-</div>
+      <div class="profile-carrera" id="right-carrera">-</div>
+      <div class="profile-uni" id="right-uni">-</div>
+      <div class="gpa-card" style="margin-top:16px;">
+        <div class="gpa-icon">&#127891;</div>
+        <div class="gpa-label">Promedio General</div>
+        <div class="gpa-value" id="right-gpa">-</div>
+        <div class="gpa-sub" id="right-credits">Total de creditos: -</div>
+        <div class="gpa-bar-wrap">
+          <div class="gpa-bar" id="right-gpa-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="upcoming-title">&#128197; Proximas Evaluaciones</div>
+      <div id="right-upcoming"></div>
+    </div>
+
+    <div class="mini-cal">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="calPrev()">&#8249;</button>
+        <h5 id="cal-month-label"></h5>
+        <button class="cal-nav" onclick="calNext()">&#8250;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </aside>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════
+   DATOS DEL ESTUDIANTE (cargados desde la BD segun el usuario logueado)
+═══════════════════════════════ */
+var STUDENT = {
+  id_estudiante: null,
+  nombre: '',
+  apellido: '',
+  carrera: '',
+  correo: '',
+  creditos_totales: 0
+};
+
+var SUBJECTS = [];
+var EVALUACIONES = [];
+var SUBJECT_COLORS = ['#5BB8E8','#8E44AD','#27AE60','#E67E22','#E74C3C','#2E86C1','#F39C12','#16A085'];
+
+/* ═══════════════════════════════
+   STATE
+═══════════════════════════════ */
+var gradeMode = 'promedio';
+var gradeRows = [];
+var rowId = 0;
+var calDate = new Date();
+var currentEvalFilter = 'Todos';
+
+var TIPO_ICONS   = { Examen:'📋', Prueba:'📝', Control:'📌', Tarea:'📦', Trabajo:'🗂️' };
+var TIPO_COLORS  = { Examen:'#EBF6FD', Prueba:'#f0e9fd', Control:'#e9f7ef', Tarea:'#fef5e7', Trabajo:'#fdecea' };
+var TIPO_TEXT    = { Examen:'#2E86C1', Prueba:'#8E44AD', Control:'#27AE60', Tarea:'#E67E22', Trabajo:'#E74C3C' };
+var SUBJ_ICONS   = ['📐','🔬','💻','🗣️','📊','🗄️'];
+var MONTHS_ES    = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var MONTHS_SHORT = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var DAYS_ES      = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+var DOT_COLORS   = ['#5BB8E8','#27AE60','#E74C3C','#F39C12'];
+
+/* ═══════════════════════════════
+   INIT
+═══════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  var usuario = getUsuarioSesion();
+  if (!usuario || !usuario.correo) {
+    location.href = '/login';
+    return;
+  }
+  if (usuario.rol === 'ADMIN') {
+    location.href = '/admin';
+    return;
+  }
+  STUDENT.correo = usuario.correo;
+  cargarDatos(usuario.correo);
+});
+
+function getUsuarioSesion() {
+  try {
+    var raw = localStorage.getItem('eduBuddyUser');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function cerrarSesion() {
+  localStorage.removeItem('eduBuddyUser');
+  location.href = '/login';
+}
+
+function cargarDatos(correo) {
+  fetch('/api/estudiantes/perfil/' + encodeURIComponent(correo))
+    .then(function(res){
+      return res.json().then(function(body){ return { ok: res.ok, body: body }; });
+    })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudieron cargar tus datos academicos', 'err'); }
+      else { aplicarDatos(r.body); }
+      iniciarUI();
+    })
+    .catch(function(){
+      showToast('No se pudo conectar con el servidor', 'err');
+      iniciarUI();
+    });
+}
+
+function aplicarDatos(data) {
+  var est = data.estudiante || {};
+  STUDENT.id_estudiante = est.id_estudiante || null;
+  STUDENT.nombre = est.nombre || STUDENT.correo;
+  STUDENT.apellido = est.apellido || '';
+  STUDENT.carrera = est.carrera || 'Sin carrera asignada';
+  STUDENT.correo = est.correo || STUDENT.correo;
+
+  SUBJECTS = (data.materias || []).map(function(m, i){
+    return {
+      id: m.id_curso,
+      codigo: m.codigo,
+      nombre: m.nombre,
+      creditos: m.creditos,
+      color: SUBJECT_COLORS[i % SUBJECT_COLORS.length],
+      modo: 'porcentaje'
+    };
+  });
+  STUDENT.creditos_totales = SUBJECTS.reduce(function(a, s){ return a + (s.creditos || 0); }, 0);
+
+  EVALUACIONES = (data.evaluaciones || []).map(function(e){
+    return {
+      id: e.id_evaluacion,
+      curso_id: e.id_curso,
+      nombre: e.nombre,
+      tipo: e.tipo,
+      porcentaje: parseFloat(e.porcentaje),
+      fecha: String(e.fecha).slice(0, 10),
+      hora: null,
+      nota: (e.nota !== null && e.nota !== undefined) ? parseFloat(e.nota) : null
+    };
+  });
+}
+
+function iniciarUI() {
+  setGreeting();
+  renderProfile();
+  renderSubjects('subjects-grid');
+  renderEvaluaciones('Todos');
+  renderUpcoming();
+  renderCalendar();
+  updateGPA();
+  addGradeRow(); addGradeRow(); addGradeRow();
+}
+
+/* ═══════════════════════════════
+   NAVIGATION
+═══════════════════════════════ */
+function setNav(section) {
+  document.querySelectorAll('.panel-section').forEach(function(el){ el.classList.remove('visible'); });
+  document.querySelectorAll('.nav-btn').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('panel-' + section).classList.add('visible');
+  var btn = document.getElementById('nav-' + section);
+  if (btn) btn.classList.add('active');
+  if (section === 'notas') renderSubjects('subjects-in-notas');
+}
+
+/* ═══════════════════════════════
+   GREETING
+═══════════════════════════════ */
+function setGreeting() {
+  var now = new Date();
+  var h = now.getHours();
+  var saludo = h < 12 ? 'Buenos dias' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  var days = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+  document.getElementById('greeting-name').textContent = saludo + ', ' + STUDENT.nombre + '! 👋';
+  document.getElementById('greeting-date').textContent = now.getDate() + ' de ' + MONTHS_ES[now.getMonth()] + ' ' + now.getFullYear() + ', ' + days[now.getDay()];
+}
+
+/* ═══════════════════════════════
+   PROFILE & GPA
+═══════════════════════════════ */
+function renderProfile() {
+  var initials = (STUDENT.nombre[0] || '') + (STUDENT.apellido[0] || '');
+  ['right-initials','perfil-initials'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.textContent = initials || '?';
+  });
+  setText('right-name',    STUDENT.nombre + (STUDENT.apellido ? ' ' + STUDENT.apellido : ''));
+  setText('perfil-name',   STUDENT.nombre + (STUDENT.apellido ? ' ' + STUDENT.apellido : ''));
+  setText('right-carrera', STUDENT.carrera);
+  setText('perfil-carrera',STUDENT.carrera);
+  setText('right-uni',     '✉️ ' + STUDENT.correo);
+  setText('perfil-uni',    '✉️ ' + STUDENT.correo);
+  setText('right-credits', 'Total de creditos: ' + STUDENT.creditos_totales);
+}
+function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+
+function updateGPA() {
+  var gpa = computeGPA();
+  var display = gpa !== null ? gpa.toFixed(1) : '-';
+  var bar = gpa !== null ? Math.min(100, ((gpa - 1) / 6) * 100) : 0;
+  ['right-gpa','perfil-gpa'].forEach(function(id){ setText(id, display); });
+  ['right-gpa-bar','perfil-gpa-bar'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.style.width = bar + '%';
+  });
+}
+
+function computeGPA() {
+  var sum = 0, count = 0;
+  SUBJECTS.forEach(function(s){ var a = subjectAverage(s); if (a !== null){ sum += a; count++; } });
+  return count > 0 ? sum / count : null;
+}
+
+function subjectAverage(s) {
+  var evals = EVALUACIONES.filter(function(e){ return e.curso_id === s.id && e.nota !== null; });
+  if (!evals.length) return null;
+  if (s.modo === 'porcentaje') {
+    var usedPct = evals.reduce(function(a,e){ return a + e.porcentaje; }, 0);
+    if (!usedPct) return null;
+    var weighted = evals.reduce(function(a,e){ return a + e.nota * (e.porcentaje / 100); }, 0);
+    return weighted / (usedPct / 100);
+  }
+  return evals.reduce(function(a,e){ return a + e.nota; }, 0) / evals.length;
+}
+
+function gradeClass(avg) {
+  if (avg === null) return 'none';
+  if (avg >= 5.5) return 'pass';
+  if (avg >= 4.0) return 'warn';
+  return 'fail';
+}
+
+/* ═══════════════════════════════
+   GRADE CALCULATOR
+═══════════════════════════════ */
+function setMode(mode) {
+  gradeMode = mode;
+  document.getElementById('mode-promedio').classList.toggle('active', mode === 'promedio');
+  document.getElementById('mode-porcentaje').classList.toggle('active', mode === 'porcentaje');
+  var header = document.getElementById('grade-header');
+  if (header) { header.className = 'grade-header ' + (mode === 'porcentaje' ? 'pct' : 'simple'); }
+  document.querySelectorAll('.grade-row').forEach(function(row){
+    row.className = 'grade-row ' + (mode === 'porcentaje' ? 'pct' : 'simple');
+    var pctInput = row.querySelector('.pct-input');
+    if (pctInput) pctInput.style.display = mode === 'porcentaje' ? '' : 'none';
+  });
+  document.getElementById('calc-result').style.display = 'none';
+  // Update header columns for pct label
+  if (header) {
+    var cols = header.querySelectorAll('.col-label');
+    if (cols.length >= 2) {
+      if (mode === 'porcentaje') {
+        if (cols.length < 3) {
+          var pctLabel = document.createElement('div');
+          pctLabel.className = 'col-label';
+          pctLabel.textContent = 'Porcentaje %';
+          header.insertBefore(pctLabel, cols[cols.length - 1].nextSibling);
+        }
+      }
+    }
+  }
+}
+
+function addGradeRow() {
+  var id = ++rowId;
+  gradeRows.push(id);
+  var list = document.getElementById('grades-list');
+  var row = document.createElement('div');
+  row.className = 'grade-row ' + (gradeMode === 'porcentaje' ? 'pct' : 'simple');
+  row.id = 'row-' + id;
+  row.innerHTML =
+    '<input type="text" placeholder="Nombre eval. (ej: Solemne 1)" id="name-' + id + '"/>' +
+    '<input type="number" min="1" max="7" step="0.1" placeholder="Ej: 5.5" id="grade-' + id + '" oninput="clampGrade(this)"/>' +
+    '<input type="number" min="0" max="100" step="1" placeholder="%" id="pct-' + id + '" class="pct-input" style="display:' + (gradeMode === 'porcentaje' ? '' : 'none') + '"/>' +
+    '<button class="del-btn" onclick="removeGradeRow(' + id + ')" title="Eliminar">&#10005;</button>';
+  list.appendChild(row);
+}
+
+function clampGrade(input) {
+  var v = parseFloat(input.value);
+  if (isNaN(v)) return;
+  if (v > 7) input.value = 7;
+  if (v < 1) input.value = 1;
+}
+
+function removeGradeRow(id) {
+  gradeRows = gradeRows.filter(function(r){ return r !== id; });
+  var el = document.getElementById('row-' + id);
+  if (el) el.remove();
+  document.getElementById('calc-result').style.display = 'none';
+}
+
+function calcAverage() {
+  var grades = [], totalPct = 0, weightedSum = 0, valid = true;
+  for (var i = 0; i < gradeRows.length; i++) {
+    var id = gradeRows[i];
+    var gEl = document.getElementById('grade-' + id);
+    if (!gEl || !gEl.value) continue;
+    var nota = parseFloat(gEl.value);
+    if (isNaN(nota) || nota < 1 || nota > 7) { valid = false; break; }
+    if (gradeMode === 'porcentaje') {
+      var pEl = document.getElementById('pct-' + id);
+      var pct = parseFloat(pEl ? pEl.value : '');
+      if (isNaN(pct) || pct < 0 || pct > 100) { valid = false; break; }
+      weightedSum += nota * (pct / 100);
+      totalPct += pct;
+    } else {
+      grades.push(nota);
+    }
+  }
+  if (!valid) { showToast('Revisa que las notas esten entre 1.0 y 7.0', 'err'); return; }
+  var avg;
+  if (gradeMode === 'porcentaje') {
+    if (!totalPct) { showToast('Ingresa al menos una evaluacion con porcentaje', 'err'); return; }
+    avg = weightedSum / (totalPct / 100);
+  } else {
+    if (!grades.length) { showToast('Ingresa al menos una nota', 'err'); return; }
+    avg = grades.reduce(function(a,b){ return a+b; }, 0) / grades.length;
+  }
+  var result = document.getElementById('calc-result');
+  var valEl = document.getElementById('result-value');
+  var badgeEl = document.getElementById('result-badge');
+  var labelEl = document.getElementById('result-label');
+  result.style.display = 'flex';
+  labelEl.textContent = gradeMode === 'porcentaje' ? 'Promedio Ponderado' : 'Promedio Simple';
+  valEl.textContent = avg.toFixed(1);
+  valEl.className = 'value';
+  if (avg >= 5.5) {
+    valEl.classList.add('pass'); badgeEl.textContent = '✅ Aprobado'; badgeEl.className = 'badge pass';
+  } else if (avg >= 4.0) {
+    valEl.classList.add('warn'); badgeEl.textContent = '⚠️ En riesgo'; badgeEl.className = 'badge warn';
+  } else {
+    valEl.classList.add('fail'); badgeEl.textContent = '❌ Reprobado'; badgeEl.className = 'badge fail';
+  }
+  if (gradeMode === 'porcentaje' && totalPct < 100) {
+    showToast('Nota calculada al ' + totalPct + '% de la ponderacion total.', 'ok');
+  }
+}
+
+/* ═══════════════════════════════
+   SUBJECTS
+═══════════════════════════════ */
+function renderSubjects(containerId) {
+  var grid = document.getElementById(containerId);
+  if (!grid) return;
+  grid.innerHTML = '';
+  SUBJECTS.forEach(function(s, i) {
+    var avg = subjectAverage(s);
+    var cls = gradeClass(avg);
+    var evals = EVALUACIONES.filter(function(e){ return e.curso_id === s.id; });
+    var card = document.createElement('div');
+    card.className = 'subject-card';
+    card.onclick = function(){ setNav('evaluaciones'); filterEvals('Todos', document.querySelector('#eval-filters .mode-btn')); };
+    card.innerHTML =
+      '<div class="subject-banner" style="background:' + s.color + '"></div>' +
+      '<div class="subject-body">' +
+        '<div class="subject-code">' + s.codigo + '</div>' +
+        '<div class="subject-name">' + SUBJ_ICONS[i % SUBJ_ICONS.length] + ' ' + s.nombre + '</div>' +
+        '<div class="subject-meta">' +
+          '<span class="subject-tag">' + s.creditos + ' creditos</span>' +
+          '<span class="subject-tag">' + (s.modo === 'porcentaje' ? '% Ponderado' : 'Promedio simple') + '</span>' +
+          '<span class="subject-tag">' + evals.length + ' evals</span>' +
+        '</div>' +
+        '<div class="subject-avg">' +
+          '<div class="avg-label">Promedio actual</div>' +
+          '<div class="avg-val ' + cls + '">' + (avg !== null ? avg.toFixed(1) : '-') + '</div>' +
+        '</div>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════
+   EVALUACIONES
+═══════════════════════════════ */
+function renderEvaluaciones(filter) {
+  var grid = document.getElementById('eval-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  var sorted = EVALUACIONES.slice().sort(function(a,b){ return new Date(a.fecha) - new Date(b.fecha); });
+  var filtered = filter === 'Todos' ? sorted : sorted.filter(function(e){ return e.tipo === filter; });
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;font-size:.9rem;">No hay evaluaciones en esta categoria.</div>';
+    return;
+  }
+
+  filtered.forEach(function(ev) {
+    var subject = SUBJECTS.find(function(s){ return s.id === ev.curso_id; });
+    var color = TIPO_COLORS[ev.tipo] || '#EBF6FD';
+    var textColor = TIPO_TEXT[ev.tipo] || '#2E86C1';
+    var icon = TIPO_ICONS[ev.tipo] || '📝';
+    var d = new Date(ev.fecha + 'T00:00:00');
+    var dateStr = d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()] + (ev.hora ? ' - ' + ev.hora : '');
+    var pctStr = ev.porcentaje ? ev.porcentaje + '% de la nota' : '';
+    var hasNota = ev.nota !== null;
+    var cls = hasNota ? gradeClass(ev.nota) : '';
+    var noteColors = { pass:'#27AE60', warn:'#F39C12', fail:'#E74C3C', none:'#6B92A8', '':'#6B92A8' };
+
+    var card = document.createElement('div');
+    card.className = 'eval-card';
+    card.id = 'eval-card-' + ev.id;
+    card.innerHTML =
+      '<div class="eval-icon" style="background:' + color + ';color:' + textColor + '">' + icon + '</div>' +
+      '<div class="eval-info">' +
+        '<div class="eval-name">' + ev.nombre +
+          '<span style="background:' + color + ';color:' + textColor + ';padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:700;margin-left:6px;">' + ev.tipo + '</span>' +
+        '</div>' +
+        '<div class="eval-course">' + (subject ? subject.nombre : '') + '</div>' +
+        '<div class="eval-meta">' + dateStr + (pctStr ? ' · ' + pctStr : '') + '</div>' +
+      '</div>' +
+      '<div class="eval-grade-wrap">' +
+        (hasNota
+          ? '<div class="eval-grade-badge" style="color:' + (noteColors[cls]||'#6B92A8') + '">' + ev.nota.toFixed(1) + '</div>' +
+            '<button class="eval-save-btn" style="background:linear-gradient(135deg,#E67E22,#F39C12)" onclick="editNota(' + ev.id + ')">&#9998;</button>'
+          : '<input class="eval-grade-input" id="nota-input-' + ev.id + '" type="number" min="1" max="7" step="0.1" placeholder="-" oninput="clampGrade(this)"/>' +
+            '<button class="eval-save-btn" onclick="saveNota(' + ev.id + ')">Guardar</button>'
+        ) +
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+function filterEvals(tipo, btn) {
+  currentEvalFilter = tipo;
+  document.querySelectorAll('#eval-filters .mode-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderEvaluaciones(tipo);
+}
+
+function toggleEvalForm(show) {
+  if (show && !SUBJECTS.length) {
+    showToast('No tienes materias inscritas para agendar una evaluacion', 'err');
+    return;
+  }
+  document.getElementById('eval-form-box').style.display = show ? 'block' : 'none';
+  document.getElementById('add-eval-toggle-btn').style.display = show ? 'none' : 'flex';
+  if (show) populateEvalFormCursos();
+}
+
+function populateEvalFormCursos() {
+  var sel = document.getElementById('eval-form-curso');
+  sel.innerHTML = SUBJECTS.map(function(s){
+    return '<option value="' + s.id + '">' + s.codigo + ' - ' + s.nombre + '</option>';
+  }).join('');
+}
+
+function guardarEvaluacion() {
+  var id_curso = parseInt(document.getElementById('eval-form-curso').value, 10);
+  var nombre = document.getElementById('eval-form-nombre').value.trim();
+  var tipo = document.getElementById('eval-form-tipo').value;
+  var porcentaje = parseFloat(document.getElementById('eval-form-porcentaje').value);
+  var fecha = document.getElementById('eval-form-fecha').value;
+
+  if (!id_curso) { showToast('Selecciona una materia', 'err'); return; }
+  if (!nombre) { showToast('Ingresa un nombre para la evaluacion', 'err'); return; }
+  if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) { showToast('El porcentaje debe estar entre 1 y 100', 'err'); return; }
+  if (!fecha) { showToast('Selecciona una fecha', 'err'); return; }
+
+  fetch('/api/evaluaciones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_curso: id_curso, nombre: nombre, tipo: tipo, porcentaje: porcentaje, fecha: fecha })
+  })
+    .then(function(res){ return res.json().then(function(body){ return { ok: res.ok, body: body }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar la evaluacion', 'err'); return; }
+      EVALUACIONES.push({
+        id: r.body.id_evaluacion, curso_id: id_curso, nombre: nombre, tipo: tipo,
+        porcentaje: porcentaje, fecha: fecha, hora: null, nota: null
+      });
+      showToast('Evaluacion "' + nombre + '" agregada', 'ok');
+      document.getElementById('eval-form-nombre').value = '';
+      document.getElementById('eval-form-porcentaje').value = '';
+      document.getElementById('eval-form-fecha').value = '';
+      toggleEvalForm(false);
+      renderEvaluaciones(currentEvalFilter);
+      renderSubjects('subjects-grid');
+      renderSubjects('subjects-in-notas');
+      renderUpcoming();
+      renderCalendar();
+    })
+    .catch(function(){ showToast('Error de red al guardar la evaluacion', 'err'); });
+}
+
+function saveNota(evId) {
+  var input = document.getElementById('nota-input-' + evId);
+  if (!input || !input.value) { showToast('Ingresa una nota valida entre 1.0 y 7.0', 'err'); return; }
+  var nota = parseFloat(input.value);
+  if (isNaN(nota) || nota < 1 || nota > 7) { showToast('Nota debe estar entre 1.0 y 7.0', 'err'); return; }
+  if (!STUDENT.id_estudiante) { showToast('No se pudo identificar al estudiante.', 'err'); return; }
+
+  fetch('/api/estudiantes/notas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_estudiante: STUDENT.id_estudiante, id_evaluacion: evId, calificacion: nota })
+  })
+    .then(function(res){ return res.json().then(function(body){ return { ok: res.ok, body: body }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar la nota', 'err'); return; }
+      var ev = EVALUACIONES.find(function(e){ return e.id === evId; });
+      if (ev) {
+        ev.nota = nota;
+        showToast('Nota ' + nota.toFixed(1) + ' guardada en ' + ev.nombre, 'ok');
+        renderEvaluaciones(currentEvalFilter);
+        renderSubjects('subjects-grid');
+        renderSubjects('subjects-in-notas');
+        renderUpcoming();
+        updateGPA();
+      }
+    })
+    .catch(function(){ showToast('Error de red al guardar la nota', 'err'); });
+}
+
+function editNota(evId) {
+  var ev = EVALUACIONES.find(function(e){ return e.id === evId; });
+  if (ev) { ev.nota = null; renderEvaluaciones(currentEvalFilter); }
+}
+
+/* ═══════════════════════════════
+   UPCOMING
+═══════════════════════════════ */
+function renderUpcoming() {
+  var now = new Date();
+  var upcoming = EVALUACIONES
+    .filter(function(e){ return new Date(e.fecha) >= now && e.nota === null; })
+    .sort(function(a,b){ return new Date(a.fecha) - new Date(b.fecha); })
+    .slice(0, 4);
+
+  var rightEl = document.getElementById('right-upcoming');
+  if (rightEl) {
+    rightEl.innerHTML = '';
+    if (!upcoming.length) {
+      rightEl.innerHTML = '<div style="font-size:.78rem;color:var(--muted);">Sin evaluaciones pendientes.</div>';
+    } else {
+      upcoming.forEach(function(ev) {
+        var subject = SUBJECTS.find(function(s){ return s.id === ev.curso_id; });
+        var d = new Date(ev.fecha + 'T00:00:00');
+        var dateStr = d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()] + (ev.hora ? ' - ' + ev.hora : '');
+        var icon = TIPO_ICONS[ev.tipo] || '📝';
+        var bgColor = TIPO_COLORS[ev.tipo] || '#EBF6FD';
+        var txColor = TIPO_TEXT[ev.tipo] || '#2E86C1';
+        var item = document.createElement('div');
+        item.className = 'exam-item';
+        item.onclick = function(){ setNav('evaluaciones'); };
+        item.innerHTML =
+          '<div class="exam-icon" style="background:' + bgColor + ';color:' + txColor + '">' + icon + '</div>' +
+          '<div class="exam-info">' +
+            '<div class="exam-name">' + ev.nombre + '</div>' +
+            '<div class="exam-date">' + (subject ? subject.nombre : '') + ' - ' + dateStr + '</div>' +
+          '</div>' +
+          '<div class="exam-arrow">›</div>';
+        rightEl.appendChild(item);
+      });
+    }
+  }
+
+  var homeEl = document.getElementById('home-upcoming-list');
+  if (homeEl) {
+    homeEl.innerHTML = '';
+    if (!upcoming.length) {
+      homeEl.innerHTML = '<div style="font-size:.78rem;color:rgba(255,255,255,.7);padding:8px 0">Sin evaluaciones pendientes!</div>';
+    } else {
+      upcoming.slice(0, 3).forEach(function(ev, i) {
+        var subject = SUBJECTS.find(function(s){ return s.id === ev.curso_id; });
+        var d = new Date(ev.fecha + 'T00:00:00');
+        var item = document.createElement('div');
+        item.className = 'task-item';
+        item.innerHTML =
+          '<div class="task-dot" style="background:' + DOT_COLORS[i%4] + '"></div>' +
+          '<span>' + ev.nombre + ' - ' + (subject ? subject.nombre : '') + '</span>' +
+          '<small>' + d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()] + '</small>';
+        homeEl.appendChild(item);
+      });
+    }
+  }
+}
+
+/* ═══════════════════════════════
+   MINI CALENDAR
+═══════════════════════════════ */
+function renderCalendar() {
+  var year = calDate.getFullYear();
+  var month = calDate.getMonth();
+  document.getElementById('cal-month-label').textContent = MONTHS_ES[month] + ' ' + year;
+
+  var grid = document.getElementById('cal-grid');
+  grid.innerHTML = DAYS_ES.map(function(d){ return '<div class="cal-day-name">' + d + '</div>'; }).join('');
+
+  var first = new Date(year, month, 1);
+  var startDay = (first.getDay() + 6) % 7;
+  var today = new Date();
+  var evalDates = {};
+  EVALUACIONES.forEach(function(e){ evalDates[e.fecha] = true; });
+
+  for (var i = 0; i < startDay; i++) {
+    var prevDay = new Date(year, month, -startDay + i + 1);
+    grid.innerHTML += '<div class="cal-day other-month">' + prevDay.getDate() + '</div>';
+  }
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dateStr = year + '-' + pad(month + 1) + '-' + pad(d);
+    var isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    var hasEv = !!evalDates[dateStr];
+    grid.innerHTML += '<div class="cal-day' + (isToday ? ' today' : '') + (hasEv ? ' has-event' : '') + '">' + d + '</div>';
+  }
+}
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function calPrev(){ calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
+function calNext(){ calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
+
+/* ═══════════════════════════════
+   SEARCH
+═══════════════════════════════ */
+function handleSearch(q) {
+  var term = q.toLowerCase().trim();
+  if (!term) return;
+  var matchS = SUBJECTS.find(function(s){ return s.nombre.toLowerCase().includes(term) || s.codigo.toLowerCase().includes(term); });
+  var matchE = EVALUACIONES.find(function(e){ return e.nombre.toLowerCase().includes(term); });
+  if (matchS) setNav('materias');
+  else if (matchE) setNav('evaluaciones');
+}
+
+/* ═══════════════════════════════
+   TOAST
+═══════════════════════════════ */
+function showToast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(function(){ el.className = 'toast'; }, 3400);
+}
+</script>
+</body>
+</html>

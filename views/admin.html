@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduBuddy — Administracion</title>
+  <meta name="description" content="Panel de administracion de EduBuddy. Gestiona estudiantes, materias, profesores y evaluaciones."/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky:    #5BB8E8;
+      --blue:   #2E86C1;
+      --deep:   #1C3A4F;
+      --light:  #EBF6FD;
+      --card:   #fff;
+      --muted:  #6B92A8;
+      --border: #D6EEF8;
+      --green:  #27AE60;
+      --red:    #E74C3C;
+      --yellow: #F39C12;
+      --purple: #8E44AD;
+      --grad:   linear-gradient(135deg, #5BB8E8, #2E86C1);
+      --radius: 18px;
+      --shadow: 0 6px 28px rgba(30,90,140,.11);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #E8F4FC;
+      min-height: 100vh;
+      display: flex;
+      color: var(--deep);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 72px;
+      background: var(--grad);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px 0 28px;
+      gap: 10px;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      box-shadow: 4px 0 20px rgba(46,134,193,.2);
+    }
+    .sidebar .logo {
+      width: 42px; height: 42px;
+      background: rgba(255,255,255,.22);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: .75rem;
+      color: #fff;
+      letter-spacing: -.5px;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .nav-btn {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.65);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s, transform .15s;
+      position: relative;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background: rgba(255,255,255,.22);
+      color: #fff;
+      transform: scale(1.08);
+    }
+    .nav-btn .tooltip {
+      position: absolute;
+      left: calc(100% + 12px);
+      background: var(--deep);
+      color: #fff;
+      font-size: .72rem;
+      font-family: 'Inter', sans-serif;
+      padding: 4px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+      z-index: 200;
+    }
+    .nav-btn:hover .tooltip { opacity: 1; }
+    .sidebar .spacer { flex: 1; }
+    .logout-btn {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.7);
+      font-size: .72rem;
+      font-family: 'Inter', sans-serif;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: color .2s;
+    }
+    .logout-btn:hover { color: #fff; }
+
+    /* MAIN LAYOUT */
+    .main {
+      margin-left: 72px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 28px;
+      background: rgba(255,255,255,.7);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-greeting h2 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--deep);
+    }
+    .topbar-greeting p { font-size: .78rem; color: var(--muted); }
+
+    /* CONTENT AREA */
+    .content { padding: 26px 28px; overflow-y: auto; flex: 1; }
+
+    .panel-section { display: none; animation: fadeIn .3s ease; }
+    .panel-section.visible { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem; font-weight: 700; color: var(--deep);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+      justify-content: space-between;
+    }
+    .section-title span.icon { font-size: 1.1rem; }
+
+    .add-btn {
+      background: var(--grad); color: #fff; border: none;
+      padding: 9px 18px; border-radius: 10px; font-size: .82rem; font-weight: 700;
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 6px 18px rgba(46,134,193,.3);
+    }
+    .add-btn:hover { transform: translateY(-2px); }
+
+    /* FORM BOX */
+    .calc-box { background: var(--card); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .calc-box h4 { font-family: 'Poppins', sans-serif; font-size: .92rem; font-weight: 700; margin-bottom: 14px; color: var(--deep); }
+    .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-row input, .form-row select {
+      width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px;
+      font-family: 'Inter', sans-serif; font-size: .85rem; color: var(--deep);
+      background: var(--light); outline: none; transition: border-color .2s;
+    }
+    .form-row input:focus, .form-row select:focus { border-color: var(--sky); background: #fff; }
+    .form-actions { display: flex; gap: 10px; }
+    .btn-primary {
+      padding: 10px 20px; background: var(--grad); color: #fff; border: none;
+      border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: .85rem; font-weight: 700;
+      cursor: pointer; transition: transform .15s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-secondary {
+      padding: 10px 20px; background: var(--light); color: var(--muted); border: 2px solid var(--border);
+      border-radius: 10px; font-family: 'Inter', sans-serif; font-size: .85rem; font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* TABLE */
+    .table-wrap { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    table.data-table th {
+      text-align: left; padding: 14px 16px; background: var(--light); color: var(--muted);
+      font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 700;
+    }
+    table.data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--deep); }
+    table.data-table tr:last-child td { border-bottom: none; }
+    table.data-table tr:hover td { background: #FAFEFF; }
+    .row-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 32px; height: 32px; border: none; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: .85rem;
+      transition: transform .15s;
+    }
+    .icon-btn:hover { transform: scale(1.1); }
+    .icon-btn.edit { background: #EBF6FD; color: var(--blue); }
+    .icon-btn.delete { background: #fdecea; color: var(--red); }
+    .icon-btn.grades { background: #f0e9fd; color: var(--purple); }
+    .empty-row { text-align: center; color: var(--muted); padding: 32px; }
+    .badge-estado { padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; }
+    .badge-estado.activo  { background: #d5f5e3; color: var(--green); }
+    .badge-estado.inactivo{ background: #fdecea; color: var(--red); }
+
+    /* MODAL (notas) */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(28,58,79,.45);
+      display: none; align-items: center; justify-content: center; z-index: 300;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: var(--radius); padding: 26px; width: 94%; max-width: 480px;
+      max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    .modal-box h4 { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .modal-box p.sub { font-size: .78rem; color: var(--muted); margin-bottom: 16px; }
+    .nota-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .nota-row:last-child { border-bottom: none; }
+    .nota-row .nota-name { flex: 1; font-size: .85rem; font-weight: 600; }
+    .nota-row input {
+      width: 70px; padding: 7px 9px; border: 2px solid var(--border); border-radius: 8px;
+      font-size: .85rem; text-align: center; background: var(--light); outline: none;
+    }
+    .nota-row input:focus { border-color: var(--sky); background: #fff; }
+    .modal-close-btn {
+      margin-top: 18px; width: 100%; padding: 11px; background: var(--light); color: var(--muted);
+      border: 2px solid var(--border); border-radius: 10px; font-weight: 600; cursor: pointer;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px); opacity: 0;
+      background: #fff; border-left: 4px solid var(--blue);
+      padding: 13px 22px; border-radius: 12px; font-size: .87rem;
+      font-weight: 500; color: var(--deep);
+      box-shadow: 0 8px 28px rgba(0,0,0,.12); z-index: 400;
+      transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .4s;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.ok { border-left-color: var(--green); }
+    .toast.err { border-left-color: var(--red); }
+
+    @media (max-width: 760px) {
+      table.data-table { font-size: .78rem; }
+      .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">Edu<br>Buddy</div>
+
+  <button class="nav-btn active" id="nav-estudiantes" onclick="setNav('estudiantes')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <div class="tooltip">Estudiantes</div>
+  </button>
+
+  <button class="nav-btn" id="nav-materias" onclick="setNav('materias')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <div class="tooltip">Materias</div>
+  </button>
+
+  <button class="nav-btn" id="nav-profesores" onclick="setNav('profesores')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <div class="tooltip">Profesores</div>
+  </button>
+
+  <button class="nav-btn" id="nav-evaluaciones" onclick="setNav('evaluaciones')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    <div class="tooltip">Evaluaciones</div>
+  </button>
+
+  <div class="spacer"></div>
+
+  <button class="logout-btn" onclick="cerrarSesion()">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-greeting">
+      <h2>Panel de administracion</h2>
+      <p id="admin-correo"></p>
+    </div>
+  </header>
+
+  <main class="content">
+
+                  
+    <section class="panel-section visible" id="panel-estudiantes">
+      <div class="section-title">
+        <div><span class="icon">&#128101;</span> Estudiantes</div>
+        <button class="add-btn" onclick="toggleForm('estudiante', true)">+ Agregar estudiante</button>
+      </div>
+
+      <div class="calc-box" id="form-estudiante" style="display:none;">
+        <h4 id="form-estudiante-title">Nuevo estudiante</h4>
+        <div class="form-row cols-3">
+          <input type="text" id="est-rut" placeholder="RUT (ej: 20111222-3)"/>
+          <input type="text" id="est-nombre" placeholder="Nombre"/>
+          <input type="text" id="est-apellido" placeholder="Apellido"/>
+        </div>
+        <div class="form-row cols-3">
+          <input type="email" id="est-correo" placeholder="Correo"/>
+          <input type="text" id="est-carrera" placeholder="Carrera"/>
+          <input type="date" id="est-fecha-ingreso" placeholder="Fecha de ingreso"/>
+        </div>
+        <div class="form-row cols-2">
+          <select id="est-estado">
+            <option value="Activo">Activo</option>
+            
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" onclick="guardarEstudiante()">Guardar</button>
+          <button class="btn-secondary" onclick="toggleForm('estudiante', false)">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>RUT</th><th>Nombre</th><th>Correo</th><th>Carrera</th><th>Ingreso</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tabla-estudiantes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MATERIAS -->
+    <section class="panel-section" id="panel-materias">
+      <div class="section-title">
+        <div><span class="icon">&#128218;</span> Materias</div>
+        <button class="add-btn" onclick="toggleForm('curso', true)">+ Agregar materia</button>
+      </div>
+
+      <div class="calc-box" id="form-curso" style="display:none;">
+        <h4 id="form-curso-title">Nueva materia</h4>
+        <div class="form-row cols-3">
+          <input type="text" id="curso-codigo" placeholder="Codigo (ej: INF101)"/>
+          <input type="text" id="curso-nombre" placeholder="Nombre"/>
+          <input type="number" id="curso-creditos" min="1" placeholder="Creditos"/>
+        </div>
+        <div class="form-row cols-2">
+          <select id="curso-profesor"></select>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" onclick="guardarCurso()">Guardar</button>
+          <button class="btn-secondary" onclick="toggleForm('curso', false)">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Codigo</th><th>Nombre</th><th>Creditos</th><th>Profesor</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tabla-materias"></tbody>
+        </table>
+      </div>
+    </section>
+
+    
+    <section class="panel-section" id="panel-profesores">
+      <div class="section-title">
+        <div><span class="icon">&#128100;</span> Profesores</div>
+        <button class="add-btn" onclick="toggleForm('profesor', true)">+ Agregar profesor</button>
+      </div>
+
+      <div class="calc-box" id="form-profesor" style="display:none;">
+        <h4 id="form-profesor-title">Nuevo profesor</h4>
+        <div class="form-row cols-3">
+          <input type="text" id="prof-nombre" placeholder="Nombre"/>
+          <input type="text" id="prof-apellido" placeholder="Apellido"/>
+          <input type="email" id="prof-correo" placeholder="Correo"/>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" onclick="guardarProfesor()">Guardar</button>
+          <button class="btn-secondary" onclick="toggleForm('profesor', false)">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Nombre</th><th>Apellido</th><th>Correo</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tabla-profesores"></tbody>
+        </table>
+      </div>
+    </section>
+
+    
+    <section class="panel-section" id="panel-evaluaciones">
+      <div class="section-title">
+        <div><span class="icon">&#9989;</span> Evaluaciones</div>
+        <button class="add-btn" onclick="toggleForm('evaluacion', true)">+ Agregar evaluacion</button>
+      </div>
+
+      <div class="calc-box" id="form-evaluacion" style="display:none;">
+        <h4 id="form-evaluacion-title">Nueva evaluacion</h4>
+        <div class="form-row cols-2">
+          <select id="eval-curso"></select>
+          <input type="text" id="eval-nombre" placeholder="Nombre (ej: Prueba 1)"/>
+        </div>
+        <div class="form-row cols-3">
+          <select id="eval-tipo">
+            <option value="Prueba">Prueba</option>
+            <option value="Control">Control</option>
+            <option value="Tarea">Tarea</option>
+            <option value="Trabajo">Trabajo</option>
+            <option value="Examen">Examen</option>
+          </select>
+          <input type="number" id="eval-porcentaje" min="1" max="100" placeholder="Porcentaje %"/>
+          <input type="date" id="eval-fecha"/>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" onclick="guardarEvaluacion()">Guardar</button>
+          <button class="btn-secondary" onclick="toggleForm('evaluacion', false)">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Materia</th><th>Nombre</th><th>Tipo</th><th>%</th><th>Fecha</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tabla-evaluaciones"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+
+<div class="modal-overlay" id="modal-notas">
+  <div class="modal-box">
+    <h4 id="modal-notas-title">Notas</h4>
+    <p class="sub" id="modal-notas-sub"></p>
+    <div id="modal-notas-list"></div>
+    <button class="modal-close-btn" onclick="cerrarModalNotas()">Cerrar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var ESTUDIANTES = [];
+var CURSOS = [];
+var PROFESORES = [];
+var EVALUACIONES = [];
+
+var editandoEstudianteId = null;
+var editandoCursoId = null;
+var editandoProfesorId = null;
+var editandoEvaluacionId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  var usuario = getUsuarioSesion();
+  if (!usuario || !usuario.correo) { location.href = '/login'; return; }
+  if (usuario.rol !== 'ADMIN') { location.href = '/dashboard'; return; }
+  document.getElementById('admin-correo').textContent = usuario.correo;
+  cargarTodo();
+});
+
+function getUsuarioSesion() {
+  try {
+    var raw = localStorage.getItem('eduBuddyUser');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function cerrarSesion() {
+  localStorage.removeItem('eduBuddyUser');
+  location.href = '/login';
+}
+
+function showToast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(function(){ el.className = 'toast'; }, 3400);
+}
+
+function setNav(section) {
+  document.querySelectorAll('.panel-section').forEach(function(el){ el.classList.remove('visible'); });
+  document.querySelectorAll('.nav-btn').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('panel-' + section).classList.add('visible');
+  var btn = document.getElementById('nav-' + section);
+  if (btn) btn.classList.add('active');
+}
+
+
+function cargarTodo() {
+  Promise.all([
+    fetch('/api/estudiantes').then(function(r){ return r.json(); }),
+    fetch('/api/cursos').then(function(r){ return r.json(); }),
+    fetch('/api/profesores').then(function(r){ return r.json(); }),
+    fetch('/api/evaluaciones').then(function(r){ return r.json(); })
+  ]).then(function(res){
+    ESTUDIANTES = res[0] || [];
+    CURSOS = res[1] || [];
+    PROFESORES = res[2] || [];
+    EVALUACIONES = res[3] || [];
+    renderEstudiantes();
+    renderMaterias();
+    renderProfesores();
+    renderEvaluaciones();
+    poblarSelectsDependientes();
+  }).catch(function(){
+    showToast('No se pudieron cargar los datos del servidor', 'err');
+  });
+}
+
+function poblarSelectsDependientes() {
+  var selCursoProf = document.getElementById('curso-profesor');
+  selCursoProf.innerHTML = '<option value="">Sin profesor asignado</option>' +
+    PROFESORES.map(function(p){ return '<option value="' + p.id_profesor + '">' + p.nombre + ' ' + p.apellido + '</option>'; }).join('');
+
+  var selEvalCurso = document.getElementById('eval-curso');
+  selEvalCurso.innerHTML = CURSOS.map(function(c){ return '<option value="' + c.id_curso + '">' + c.codigo + ' - ' + c.nombre + '</option>'; }).join('');
+}
+
+function toggleForm(tipo, show) {
+  document.getElementById('form-' + tipo).style.display = show ? 'block' : 'none';
+  if (!show) {
+    limpiarFormulario(tipo);
+  }
+}
+
+function limpiarFormulario(tipo) {
+  if (tipo === 'estudiante') {
+    editandoEstudianteId = null;
+    document.getElementById('form-estudiante-title').textContent = 'Nuevo estudiante';
+    ['est-rut','est-nombre','est-apellido','est-correo','est-carrera','est-fecha-ingreso'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('est-estado').value = 'Activo';
+  } else if (tipo === 'curso') {
+    editandoCursoId = null;
+    document.getElementById('form-curso-title').textContent = 'Nueva materia';
+    ['curso-codigo','curso-nombre','curso-creditos'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('curso-profesor').value = '';
+  } else if (tipo === 'profesor') {
+    editandoProfesorId = null;
+    document.getElementById('form-profesor-title').textContent = 'Nuevo profesor';
+    ['prof-nombre','prof-apellido','prof-correo'].forEach(function(id){ document.getElementById(id).value = ''; });
+  } else if (tipo === 'evaluacion') {
+    editandoEvaluacionId = null;
+    document.getElementById('form-evaluacion-title').textContent = 'Nueva evaluacion';
+    ['eval-nombre','eval-porcentaje','eval-fecha'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('eval-tipo').value = 'Prueba';
+  }
+}
+
+
+function renderEstudiantes() {
+  var tbody = document.getElementById('tabla-estudiantes');
+  if (!ESTUDIANTES.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-row">No hay estudiantes registrados.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = ESTUDIANTES.map(function(e){
+    return '<tr>' +
+      '<td>' + e.rut + '</td>' +
+      '<td>' + e.nombre + ' ' + e.apellido + '</td>' +
+      '<td>' + e.correo + '</td>' +
+      '<td>' + e.carrera + '</td>' +
+      '<td>' + String(e.fecha_ingreso).slice(0,10) + '</td>' +
+      '<td><span class="badge-estado ' + (e.estado === 'Activo' ? 'activo' : 'inactivo') + '">' + e.estado + '</span></td>' +
+      '<td><div class="row-actions">' +
+        '<button class="icon-btn edit" onclick="editarEstudiante(' + e.id_estudiante + ')" title="Editar">&#9998;</button>' +
+        '<button class="icon-btn delete" onclick="eliminarEstudiante(' + e.id_estudiante + ')" title="Eliminar">&#128465;</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function editarEstudiante(id) {
+  var e = ESTUDIANTES.find(function(x){ return x.id_estudiante === id; });
+  if (!e) return;
+  editandoEstudianteId = id;
+  document.getElementById('form-estudiante-title').textContent = 'Editar estudiante';
+  document.getElementById('est-rut').value = e.rut;
+  document.getElementById('est-nombre').value = e.nombre;
+  document.getElementById('est-apellido').value = e.apellido;
+  document.getElementById('est-correo').value = e.correo;
+  document.getElementById('est-carrera').value = e.carrera;
+  document.getElementById('est-fecha-ingreso').value = String(e.fecha_ingreso).slice(0,10);
+  document.getElementById('est-estado').value = e.estado;
+  toggleForm('estudiante', true);
+}
+
+function guardarEstudiante() {
+  var body = {
+    rut: document.getElementById('est-rut').value.trim(),
+    nombre: document.getElementById('est-nombre').value.trim(),
+    apellido: document.getElementById('est-apellido').value.trim(),
+    correo: document.getElementById('est-correo').value.trim(),
+    carrera: document.getElementById('est-carrera').value.trim(),
+    fecha_ingreso: document.getElementById('est-fecha-ingreso').value,
+    estado: document.getElementById('est-estado').value
+  };
+  if (!body.rut || !body.nombre || !body.apellido || !body.correo || !body.carrera || !body.fecha_ingreso) {
+    showToast('Completa todos los campos obligatorios', 'err');
+    return;
+  }
+
+  var esEdicion = editandoEstudianteId !== null;
+  var url = esEdicion ? '/api/estudiantes/' + editandoEstudianteId : '/api/estudiantes';
+  var method = esEdicion ? 'PUT' : 'POST';
+
+  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar el estudiante', 'err'); return; }
+      if (esEdicion) {
+        var idx = ESTUDIANTES.findIndex(function(x){ return x.id_estudiante === editandoEstudianteId; });
+        ESTUDIANTES[idx] = Object.assign({ id_estudiante: editandoEstudianteId }, body);
+      } else {
+        ESTUDIANTES.push(r.body);
+      }
+      showToast('Estudiante guardado correctamente', 'ok');
+      toggleForm('estudiante', false);
+      renderEstudiantes();
+    })
+    .catch(function(){ showToast('Error de red al guardar el estudiante', 'err'); });
+}
+
+function eliminarEstudiante(id) {
+  var e = ESTUDIANTES.find(function(x){ return x.id_estudiante === id; });
+  if (!confirm('¿Eliminar al estudiante ' + (e ? e.nombre + ' ' + e.apellido : '') + '?')) return;
+
+  fetch('/api/estudiantes/' + id, { method: 'DELETE' })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo eliminar el estudiante', 'err'); return; }
+      ESTUDIANTES = ESTUDIANTES.filter(function(x){ return x.id_estudiante !== id; });
+      showToast('Estudiante eliminado', 'ok');
+      renderEstudiantes();
+    })
+    .catch(function(){ showToast('Error de red al eliminar el estudiante', 'err'); });
+}
+
+
+function renderMaterias() {
+  var tbody = document.getElementById('tabla-materias');
+  if (!CURSOS.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No hay materias registradas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = CURSOS.map(function(c){
+    var profesor = c.profesor_nombre ? (c.profesor_nombre + ' ' + c.profesor_apellido) : '-';
+    return '<tr>' +
+      '<td>' + c.codigo + '</td>' +
+      '<td>' + c.nombre + '</td>' +
+      '<td>' + c.creditos + '</td>' +
+      '<td>' + profesor + '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="icon-btn edit" onclick="editarCurso(' + c.id_curso + ')" title="Editar">&#9998;</button>' +
+        '<button class="icon-btn delete" onclick="eliminarCurso(' + c.id_curso + ')" title="Eliminar">&#128465;</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function editarCurso(id) {
+  var c = CURSOS.find(function(x){ return x.id_curso === id; });
+  if (!c) return;
+  editandoCursoId = id;
+  document.getElementById('form-curso-title').textContent = 'Editar materia';
+  document.getElementById('curso-codigo').value = c.codigo;
+  document.getElementById('curso-nombre').value = c.nombre;
+  document.getElementById('curso-creditos').value = c.creditos;
+  document.getElementById('curso-profesor').value = c.id_profesor || '';
+  toggleForm('curso', true);
+}
+
+function guardarCurso() {
+  var body = {
+    codigo: document.getElementById('curso-codigo').value.trim(),
+    nombre: document.getElementById('curso-nombre').value.trim(),
+    creditos: parseInt(document.getElementById('curso-creditos').value, 10),
+    id_profesor: document.getElementById('curso-profesor').value ? parseInt(document.getElementById('curso-profesor').value, 10) : null
+  };
+  if (!body.codigo || !body.nombre || !body.creditos) {
+    showToast('Completa codigo, nombre y creditos', 'err');
+    return;
+  }
+
+  var esEdicion = editandoCursoId !== null;
+  var url = esEdicion ? '/api/cursos/' + editandoCursoId : '/api/cursos';
+  var method = esEdicion ? 'PUT' : 'POST';
+
+  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar la materia', 'err'); return; }
+      cargarTodo();
+      showToast('Materia guardada correctamente', 'ok');
+      toggleForm('curso', false);
+    })
+    .catch(function(){ showToast('Error de red al guardar la materia', 'err'); });
+}
+
+function eliminarCurso(id) {
+  var c = CURSOS.find(function(x){ return x.id_curso === id; });
+  if (!confirm('¿Eliminar la materia ' + (c ? c.nombre : '') + '? Esto tambien puede afectar inscripciones y evaluaciones asociadas.')) return;
+
+  fetch('/api/cursos/' + id, { method: 'DELETE' })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo eliminar la materia', 'err'); return; }
+      CURSOS = CURSOS.filter(function(x){ return x.id_curso !== id; });
+      showToast('Materia eliminada', 'ok');
+      renderMaterias();
+      poblarSelectsDependientes();
+    })
+    .catch(function(){ showToast('Error de red al eliminar la materia', 'err'); });
+}
+
+
+function renderProfesores() {
+  var tbody = document.getElementById('tabla-profesores');
+  if (!PROFESORES.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-row">No hay profesores registrados.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = PROFESORES.map(function(p){
+    return '<tr>' +
+      '<td>' + p.nombre + '</td>' +
+      '<td>' + p.apellido + '</td>' +
+      '<td>' + p.correo + '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="icon-btn edit" onclick="editarProfesor(' + p.id_profesor + ')" title="Editar">&#9998;</button>' +
+        '<button class="icon-btn delete" onclick="eliminarProfesor(' + p.id_profesor + ')" title="Eliminar">&#128465;</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function editarProfesor(id) {
+  var p = PROFESORES.find(function(x){ return x.id_profesor === id; });
+  if (!p) return;
+  editandoProfesorId = id;
+  document.getElementById('form-profesor-title').textContent = 'Editar profesor';
+  document.getElementById('prof-nombre').value = p.nombre;
+  document.getElementById('prof-apellido').value = p.apellido;
+  document.getElementById('prof-correo').value = p.correo;
+  toggleForm('profesor', true);
+}
+
+function guardarProfesor() {
+  var body = {
+    nombre: document.getElementById('prof-nombre').value.trim(),
+    apellido: document.getElementById('prof-apellido').value.trim(),
+    correo: document.getElementById('prof-correo').value.trim()
+  };
+  if (!body.nombre || !body.apellido || !body.correo) {
+    showToast('Completa nombre, apellido y correo', 'err');
+    return;
+  }
+
+  var esEdicion = editandoProfesorId !== null;
+  var url = esEdicion ? '/api/profesores/' + editandoProfesorId : '/api/profesores';
+  var method = esEdicion ? 'PUT' : 'POST';
+
+  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar el profesor', 'err'); return; }
+      cargarTodo();
+      showToast('Profesor guardado correctamente', 'ok');
+      toggleForm('profesor', false);
+    })
+    .catch(function(){ showToast('Error de red al guardar el profesor', 'err'); });
+}
+
+function eliminarProfesor(id) {
+  var p = PROFESORES.find(function(x){ return x.id_profesor === id; });
+  if (!confirm('¿Eliminar al profesor ' + (p ? p.nombre + ' ' + p.apellido : '') + '?')) return;
+
+  fetch('/api/profesores/' + id, { method: 'DELETE' })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo eliminar el profesor', 'err'); return; }
+      PROFESORES = PROFESORES.filter(function(x){ return x.id_profesor !== id; });
+      showToast('Profesor eliminado', 'ok');
+      renderProfesores();
+      poblarSelectsDependientes();
+    })
+    .catch(function(){ showToast('Error de red al eliminar el profesor', 'err'); });
+}
+
+
+function renderEvaluaciones() {
+  var tbody = document.getElementById('tabla-evaluaciones');
+  if (!EVALUACIONES.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-row">No hay evaluaciones registradas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = EVALUACIONES.map(function(ev){
+    return '<tr>' +
+      '<td>' + ev.curso_codigo + ' - ' + ev.curso_nombre + '</td>' +
+      '<td>' + ev.nombre + '</td>' +
+      '<td>' + ev.tipo + '</td>' +
+      '<td>' + parseFloat(ev.porcentaje) + '%</td>' +
+      '<td>' + String(ev.fecha).slice(0,10) + '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="icon-btn grades" onclick="verNotas(' + ev.id_evaluacion + ')" title="Ver notas">&#128202;</button>' +
+        '<button class="icon-btn edit" onclick="editarEvaluacion(' + ev.id_evaluacion + ')" title="Editar">&#9998;</button>' +
+        '<button class="icon-btn delete" onclick="eliminarEvaluacion(' + ev.id_evaluacion + ')" title="Eliminar">&#128465;</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function editarEvaluacion(id) {
+  var ev = EVALUACIONES.find(function(x){ return x.id_evaluacion === id; });
+  if (!ev) return;
+  editandoEvaluacionId = id;
+  document.getElementById('form-evaluacion-title').textContent = 'Editar evaluacion';
+  document.getElementById('eval-curso').value = ev.id_curso;
+  document.getElementById('eval-nombre').value = ev.nombre;
+  document.getElementById('eval-tipo').value = ev.tipo;
+  document.getElementById('eval-porcentaje').value = parseFloat(ev.porcentaje);
+  document.getElementById('eval-fecha').value = String(ev.fecha).slice(0,10);
+  toggleForm('evaluacion', true);
+}
+
+function guardarEvaluacion() {
+  var body = {
+    id_curso: parseInt(document.getElementById('eval-curso').value, 10),
+    nombre: document.getElementById('eval-nombre').value.trim(),
+    tipo: document.getElementById('eval-tipo').value,
+    porcentaje: parseFloat(document.getElementById('eval-porcentaje').value),
+    fecha: document.getElementById('eval-fecha').value
+  };
+  if (!body.id_curso || !body.nombre || isNaN(body.porcentaje) || body.porcentaje <= 0 || body.porcentaje > 100 || !body.fecha) {
+    showToast('Completa todos los campos con valores validos', 'err');
+    return;
+  }
+
+  var esEdicion = editandoEvaluacionId !== null;
+  var url = esEdicion ? '/api/evaluaciones/' + editandoEvaluacionId : '/api/evaluaciones';
+  var method = esEdicion ? 'PUT' : 'POST';
+
+  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar la evaluacion', 'err'); return; }
+      cargarTodo();
+      showToast('Evaluacion guardada correctamente', 'ok');
+      toggleForm('evaluacion', false);
+    })
+    .catch(function(){ showToast('Error de red al guardar la evaluacion', 'err'); });
+}
+
+function eliminarEvaluacion(id) {
+  var ev = EVALUACIONES.find(function(x){ return x.id_evaluacion === id; });
+  if (!confirm('¿Eliminar la evaluacion ' + (ev ? ev.nombre : '') + '? Esto tambien eliminara las notas asociadas.')) return;
+
+  fetch('/api/evaluaciones/' + id, { method: 'DELETE' })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo eliminar la evaluacion', 'err'); return; }
+      EVALUACIONES = EVALUACIONES.filter(function(x){ return x.id_evaluacion !== id; });
+      showToast('Evaluacion eliminada', 'ok');
+      renderEvaluaciones();
+    })
+    .catch(function(){ showToast('Error de red al eliminar la evaluacion', 'err'); });
+}
+
+
+function verNotas(idEvaluacion) {
+  var ev = EVALUACIONES.find(function(x){ return x.id_evaluacion === idEvaluacion; });
+  if (!ev) return;
+
+  fetch('/api/evaluaciones/' + idEvaluacion + '/notas')
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudieron cargar las notas', 'err'); return; }
+      document.getElementById('modal-notas-title').textContent = 'Notas: ' + ev.nombre;
+      document.getElementById('modal-notas-sub').textContent = ev.curso_codigo + ' - ' + ev.curso_nombre;
+      var list = document.getElementById('modal-notas-list');
+      if (!r.body.length) {
+        list.innerHTML = '<div class="empty-row">No hay estudiantes inscritos en esta materia.</div>';
+      } else {
+        list.innerHTML = r.body.map(function(est){
+          return '<div class="nota-row">' +
+            '<div class="nota-name">' + est.nombre + ' ' + est.apellido + '</div>' +
+            '<input type="number" min="1" max="7" step="0.1" value="' + (est.nota !== null ? parseFloat(est.nota) : '') + '" id="nota-' + est.id_estudiante + '"/>' +
+            '<button class="icon-btn edit" title="Guardar" onclick="guardarNotaModal(' + idEvaluacion + ',' + est.id_estudiante + ')">&#10003;</button>' +
+            '<button class="icon-btn delete" title="Eliminar nota" onclick="eliminarNotaModal(' + idEvaluacion + ',' + est.id_estudiante + ')">&#128465;</button>' +
+          '</div>';
+        }).join('');
+      }
+      document.getElementById('modal-notas').classList.add('show');
+    })
+    .catch(function(){ showToast('Error de red al cargar las notas', 'err'); });
+}
+
+function guardarNotaModal(idEvaluacion, idEstudiante) {
+  var input = document.getElementById('nota-' + idEstudiante);
+  var nota = parseFloat(input.value);
+  if (isNaN(nota) || nota < 1 || nota > 7) { showToast('La nota debe estar entre 1.0 y 7.0', 'err'); return; }
+
+  fetch('/api/estudiantes/notas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_estudiante: idEstudiante, id_evaluacion: idEvaluacion, calificacion: nota })
+  })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo guardar la nota', 'err'); return; }
+      showToast('Nota guardada', 'ok');
+    })
+    .catch(function(){ showToast('Error de red al guardar la nota', 'err'); });
+}
+
+function eliminarNotaModal(idEvaluacion, idEstudiante) {
+  fetch('/api/estudiantes/notas/' + idEstudiante + '/' + idEvaluacion, { method: 'DELETE' })
+    .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
+    .then(function(r){
+      if (!r.ok) { showToast(r.body.error || 'No se pudo eliminar la nota', 'err'); return; }
+      document.getElementById('nota-' + idEstudiante).value = '';
+      showToast('Nota eliminada', 'ok');
+    })
+    .catch(function(){ showToast('Error de red al eliminar la nota', 'err'); });
+}
+
+function cerrarModalNotas() {
+  document.getElementById('modal-notas').classList.remove('show');
+}
+</script>
+</body>
+</html>
