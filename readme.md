@@ -1,7 +1,7 @@
 
 Integrantes:
 Tatiana Abarca Urra: Cree el readme, Hice el login.html completo y validaciones simples, diseñe la base de datos e inserte datos de prueba, para completar el flujo del login tambien hice el authController.js para el modelo de autenticacion. Corregi errores de manera general y no sabria especificar pero en todas las carpeta MVC realize cambios generales. 
-Ana Belen Campos
+Ana Belen Campos: cree la idea del dashboard y lo implemente, aplique , mejoras , diseñe la mascota virtual y la incorpore. 
 Demian Abarzua
 
 
