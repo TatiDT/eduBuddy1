@@ -40,7 +40,14 @@ app.use('/api/cursos', cursosRouter);
 const profesoresRouter = require('./routes/profesores');
 app.use('/api/profesores', profesoresRouter);
 
+const subEvaluacionesRouter = require('./routes/subEvaluaciones');
+app.use('/api', subEvaluacionesRouter);
 
+const reportesRouter = require('./routes/reportes');
+app.use('/api/reportes', reportesRouter);
+
+const apuntesRouter = require('./routes/apuntes');
+app.use('/api/apuntes', apuntesRouter);
 // ── Arrancar servidor ────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Servidor arriba en http://localhost:${PORT}`);
