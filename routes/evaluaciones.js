@@ -3,7 +3,7 @@ const router = express.Router();
 const controller = require('../controllers/evaluacionController');
 const { requireAdmin } = require('../middleware/auth');
 
-router.get('/', requireAdmin, controller.listar);
+router.get('/', controller.listar);
 router.post('/', controller.agregar);
 router.put('/:id', requireAdmin, controller.editar);
 router.delete('/:id', requireAdmin, controller.eliminar);
