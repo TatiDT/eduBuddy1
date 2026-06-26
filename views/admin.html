@@ -34,7 +34,7 @@
       color: var(--deep);
     }
 
-    /* SIDEBAR */
+    
     .sidebar {
       width: 72px;
       background: var(--grad);
@@ -105,7 +105,7 @@
     }
     .logout-btn:hover { color: #fff; }
 
-    /* MAIN LAYOUT */
+    
     .main {
       margin-left: 72px;
       flex: 1;
@@ -114,7 +114,7 @@
       min-height: 100vh;
     }
 
-    /* TOP BAR */
+    
     .topbar {
       display: flex;
       align-items: center;
@@ -132,8 +132,20 @@
       color: var(--deep);
     }
     .topbar-greeting p { font-size: .78rem; color: var(--muted); }
+    .topbar-mascot-wrap {
+      margin-left: auto;
+      width: 64px; height: 64px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+      padding: 6px;
+      animation: float 4s ease-in-out infinite;
+    }
+    .topbar-mascot { width: 100%; height: 100%; object-fit: contain; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-    /* CONTENT AREA */
+    
     .content { padding: 26px 28px; overflow-y: auto; flex: 1; }
 
     .panel-section { display: none; animation: fadeIn .3s ease; }
@@ -157,7 +169,7 @@
     }
     .add-btn:hover { transform: translateY(-2px); }
 
-    /* FORM BOX */
+    
     .calc-box { background: var(--card); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
     .calc-box h4 { font-family: 'Poppins', sans-serif; font-size: .92rem; font-weight: 700; margin-bottom: 14px; color: var(--deep); }
     .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
@@ -182,7 +194,19 @@
       cursor: pointer;
     }
 
-    /* TABLE */
+
+    .btn-reporte {
+      padding: 10px 20px; border: none; color: #fff;
+      border-radius: 10px; font-family: 'Inter', sans-serif; font-size: .85rem; font-weight: 700;
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .btn-reporte:hover { transform: translateY(-2px); }
+    .btn-reporte.c1 { background: #5BB8E8; box-shadow: 0 6px 18px rgba(91,184,232,.4); }
+    .btn-reporte.c2 { background: #8E6FCB; box-shadow: 0 6px 18px rgba(142,111,203,.4); }
+    .btn-reporte.c3 { background: #2FAE76; box-shadow: 0 6px 18px rgba(47,174,118,.4); }
+    .btn-reporte.c4 { background: #E8A33D; box-shadow: 0 6px 18px rgba(232,163,61,.4); }
+
+    
     .table-wrap { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     table.data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
     table.data-table th {
@@ -207,7 +231,7 @@
     .badge-estado.activo  { background: #d5f5e3; color: var(--green); }
     .badge-estado.inactivo{ background: #fdecea; color: var(--red); }
 
-    /* MODAL (notas) */
+    
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(28,58,79,.45);
       display: none; align-items: center; justify-content: center; z-index: 300;
@@ -232,7 +256,7 @@
       border: 2px solid var(--border); border-radius: 10px; font-weight: 600; cursor: pointer;
     }
 
-    /* Toast */
+    
     .toast {
       position: fixed; bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(80px); opacity: 0;
@@ -255,7 +279,7 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
+
 <aside class="sidebar">
   <div class="logo">Edu<br>Buddy</div>
 
@@ -292,12 +316,15 @@
   </button>
 </aside>
 
-<!-- MAIN -->
+
 <div class="main">
   <header class="topbar">
     <div class="topbar-greeting">
       <h2>Panel de administracion</h2>
       <p id="admin-correo"></p>
+    </div>
+    <div class="topbar-mascot-wrap">
+      <img src="/Img/buddyProfe.png" alt="EduBuddy" class="topbar-mascot" onerror="this.parentElement.style.display='none'"/>
     </div>
   </header>
 
@@ -344,7 +371,7 @@
       </div>
     </section>
 
-    <!-- MATERIAS -->
+    
     <section class="panel-section" id="panel-materias">
       <div class="section-title">
         <div><span class="icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> Materias</div>
@@ -364,6 +391,9 @@
             <option value="porcentaje">Por porcentaje</option>
           </select>
           <select id="curso-profesor"></select>
+        </div>
+        <div id="curso-estudiante-row" class="form-row">
+          <select id="curso-estudiante"></select>
         </div>
         <div class="form-actions">
           <button class="btn-primary" onclick="guardarCurso()">Guardar</button>
@@ -457,10 +487,14 @@
         <div><span class="icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span> Reportes</div>
       </div>
       
-      <div style="margin-bottom:20px; display:flex; gap:10px;">
-        <button class="btn-secondary" onclick="renderReporte('promedios')">Promedios por Materia</button>
-        <button class="btn-secondary" onclick="renderReporte('detalle')">Listado de Notas</button>
-        <button class="btn-secondary" onclick="exportarPDF()">Exportar PDF</button>
+      <div style="margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn-reporte c1" onclick="renderReporte('promedios')">Promedios por Materia</button>
+        <button class="btn-reporte c2" onclick="renderReporte('detalle')">Listado de Notas</button>
+        <select id="filtro-curso-reportes" onchange="renderReporte(reporteActual)" style="padding:8px; border-radius:8px; border:1px solid var(--border);">
+          <option value="">Todas las materias</option>
+        </select>
+        <button class="btn-reporte c3" onclick="exportarPDF()">Exportar PDF</button>
+        <button class="btn-reporte c4" onclick="exportarExcel()">Exportar Excel</button>
       </div>
 
       <div class="table-wrap">
@@ -474,7 +508,7 @@
   </main>
 </div>
 
-<!-- MODAL NOTAS -->
+
 <div class="modal-overlay" id="modal-notas">
   <div class="modal-box" style="max-width:900px; width:95%;">
     <h4 id="modal-notas-title">Notas</h4>
@@ -516,6 +550,14 @@ var editandoCursoId = null;
 var editandoProfesorId = null;
 var editandoEvaluacionId = null;
 
+var fetchOriginal = window.fetch;
+window.fetch = function(url, options) {
+  var usuario = getUsuarioSesion();
+  options = options || {};
+  options.headers = Object.assign({}, options.headers, usuario ? { 'x-user-rol': usuario.rol, 'x-user-correo': usuario.correo } : {});
+  return fetchOriginal(url, options);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   var usuario = getUsuarioSesion();
   if (!usuario || !usuario.correo) { location.href = '/login'; return; }
@@ -556,10 +598,10 @@ function actualizarCampoPorcentaje() {
   var sel = document.getElementById('eval-curso');
   if (!sel) return;
   var id = parseInt(sel.value, 10);
-  // Siempre mostrar el campo de porcentaje
+  
   var pctInput = document.getElementById('eval-porcentaje');
   if (pctInput) pctInput.style.display = '';
-  // Mostrar suma actual de porcentajes del curso
+  
   var evsCurso = EVALUACIONES.filter(function(e) { return e.id_curso === id; });
   var sumaActual = evsCurso.reduce(function(a, e) { return a + (parseFloat(e.porcentaje) || 0); }, 0);
   var hint = document.getElementById('pct-hint');
@@ -592,6 +634,10 @@ function poblarSelectsDependientes() {
   selCursoProf.innerHTML = '<option value="">Sin profesor asignado</option>' +
     PROFESORES.map(function(p){ return '<option value="' + p.id_profesor + '">' + p.nombre + ' ' + p.apellido + '</option>'; }).join('');
 
+  var selCursoEst = document.getElementById('curso-estudiante');
+  selCursoEst.innerHTML = '<option value="">Sin estudiante inscrito</option>' +
+    ESTUDIANTES.map(function(e){ return '<option value="' + e.id_estudiante + '">' + e.nombre + ' ' + e.apellido + '</option>'; }).join('');
+
   var selEvalCurso = document.getElementById('eval-curso');
   selEvalCurso.innerHTML = CURSOS.map(function(c){ return '<option value="' + c.id_curso + '">' + c.codigo + ' - ' + c.nombre + '</option>'; }).join('');
   selEvalCurso.onchange = actualizarCampoPorcentaje;
@@ -602,6 +648,10 @@ function toggleForm(tipo, show) {
   document.getElementById('form-' + tipo).style.display = show ? 'block' : 'none';
   if (!show) {
     limpiarFormulario(tipo);
+  }
+  if (tipo === 'curso') {
+    var esNuevo = show && editandoCursoId === null;
+    document.getElementById('curso-estudiante-row').style.display = esNuevo ? 'grid' : 'none';
   }
 }
 
@@ -617,6 +667,7 @@ function limpiarFormulario(tipo) {
     ['curso-codigo','curso-nombre','curso-creditos'].forEach(function(id){ document.getElementById(id).value = ''; });
     document.getElementById('curso-modo').value = 'promedio';
     document.getElementById('curso-profesor').value = '';
+    document.getElementById('curso-estudiante').value = '';
   } else if (tipo === 'profesor') {
     editandoProfesorId = null;
     document.getElementById('form-profesor-title').textContent = 'Nuevo profesor';
@@ -769,6 +820,10 @@ function guardarCurso() {
   }
 
   var esEdicion = editandoCursoId !== null;
+  if (!esEdicion) {
+    var idEstudiante = document.getElementById('curso-estudiante').value;
+    body.id_estudiantes = idEstudiante ? [parseInt(idEstudiante, 10)] : [];
+  }
   var url = esEdicion ? '/api/cursos/' + editandoCursoId : '/api/cursos';
   var method = esEdicion ? 'PUT' : 'POST';
 
@@ -1021,7 +1076,7 @@ function agregarSubEval() {
         document.getElementById('new-sub-nombre').value = '';
         document.getElementById('new-sub-pct').value = '';
         showToast('Sub-criterio añadido', 'ok');
-        verNotas(currentEvaluacionId); // recargar
+        verNotas(currentEvaluacionId); 
     });
 }
 
@@ -1070,7 +1125,7 @@ function renderNotasTabla(estudiantes, subNotas, subEvals) {
                 }
                 tr += '<td><input type="number" min="1" max="7" step="0.1" value="' + val + '" id="subnota-' + est.id_estudiante + '-' + se.id_sub_evaluacion + '" style="width:60px; padding:4px;" /></td>';
             });
-            // Si falta ponderar, se asume proporcional o directa para visualización, aquí lo dejamos directo si sumaPct > 0
+            
             if (sumaPct > 0) {
                 notaCalculada = (notaCalculada / (sumaPct/100)).toFixed(1);
             } else {
@@ -1099,7 +1154,7 @@ function renderNotasTabla(estudiantes, subNotas, subEvals) {
 function guardarTodoEstudiante(idEstudiante) {
     var promesas = [];
     
-    // Guardar sub-notas o nota directa
+    
     if (currentSubEvals.length > 0) {
         currentSubEvals.forEach(se => {
             var el = document.getElementById('subnota-' + idEstudiante + '-' + se.id_sub_evaluacion);
@@ -1126,7 +1181,7 @@ function guardarTodoEstudiante(idEstudiante) {
         }
     }
     
-    // Guardar recuperación
+    
     var recEl = document.getElementById('recup-' + idEstudiante);
     if (recEl && recEl.value) {
         var d = new Date().toISOString().split('T')[0];
@@ -1138,12 +1193,12 @@ function guardarTodoEstudiante(idEstudiante) {
             })
         );
     } else if (recEl && !recEl.value) {
-        // Podría intentar eliminarla si estaba vacía, pero para no complicar, lo dejamos así.
+        
     }
 
     Promise.all(promesas).then(() => {
         showToast('Datos guardados', 'ok');
-        verNotas(currentEvaluacionId); // recargar modal
+        verNotas(currentEvaluacionId); 
     }).catch(() => showToast('Error al guardar algunos datos', 'err'));
 }
 
@@ -1151,33 +1206,87 @@ function cerrarModalNotas() {
   document.getElementById('modal-notas').classList.remove('show');
 }
 
-// ----- REPORTES -----
+
+var reporteActual = 'promedios';
+var ultimoReporteData = [];
+
 function cargarReportes() {
-    // default
+    var sel = document.getElementById('filtro-curso-reportes');
+    sel.innerHTML = '<option value="">Todas las materias</option>' + CURSOS.map(c =>
+        '<option value="'+c.id_curso+'">'+c.codigo+' - '+c.nombre+'</option>'
+    ).join('');
     renderReporte('promedios');
 }
 
 function renderReporte(tipo) {
+    reporteActual = tipo;
     var thead = document.getElementById('thead-reportes');
     var tbody = document.getElementById('tbody-reportes');
     thead.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
     tbody.innerHTML = '';
-    
-    fetch('/api/reportes/' + tipo)
-        .then(r => r.json())
+
+    var idCurso = document.getElementById('filtro-curso-reportes').value;
+    var url = '/api/reportes/' + tipo + (idCurso ? '?id_curso=' + idCurso : '');
+
+    fetch(url)
+        .then(r => {
+            if (!r.ok) throw new Error('No se pudo obtener el reporte');
+            return r.json();
+        })
         .then(data => {
+            ultimoReporteData = data;
             if (tipo === 'promedios') {
                 thead.innerHTML = '<tr><th>Código</th><th>Materia</th><th>Inscritos</th><th>Promedio Curso</th><th>Tasa Aprobación</th></tr>';
-                tbody.innerHTML = data.map(d => 
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="5">Sin datos para mostrar</td></tr>'; return; }
+                tbody.innerHTML = data.map(d =>
                     '<tr><td>'+d.codigo+'</td><td>'+d.nombre+'</td><td>'+d.inscritos+'</td><td>'+d.promedio+'</td><td>'+d.tasaAprobacion+'</td></tr>'
                 ).join('');
             } else {
                 thead.innerHTML = '<tr><th>Materia</th><th>Estudiante</th><th>Nota Final</th><th>Estado</th></tr>';
-                tbody.innerHTML = data.map(d => 
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="4">Sin datos para mostrar</td></tr>'; return; }
+                tbody.innerHTML = data.map(d =>
                     '<tr><td>'+d.curso+'</td><td>'+d.estudiante+'</td><td>'+d.notaFinal+'</td><td>'+d.estado+'</td></tr>'
                 ).join('');
             }
+        })
+        .catch(() => {
+            thead.innerHTML = '<tr><td colspan="5">Error al cargar el reporte</td></tr>';
+            tbody.innerHTML = '';
+            showToast('No se pudo cargar el reporte', 'err');
         });
+}
+
+function exportarExcel() {
+    if (!ultimoReporteData.length) { showToast('No hay datos para exportar', 'err'); return; }
+
+    if (!window.XLSX) {
+        var script = document.createElement('script');
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+        script.onload = generarExcel;
+        document.body.appendChild(script);
+    } else {
+        generarExcel();
+    }
+}
+
+function generarExcel() {
+    var encabezados, filas, anchos;
+    if (reporteActual === 'promedios') {
+        encabezados = ['Código', 'Materia', 'Inscritos', 'Promedio Curso', 'Tasa Aprobación'];
+        filas = ultimoReporteData.map(d => [d.codigo, d.nombre, d.inscritos, d.promedio, d.tasaAprobacion]);
+        anchos = [10, 28, 10, 14, 14];
+    } else {
+        encabezados = ['Materia', 'Estudiante', 'Nota Final', 'Estado'];
+        filas = ultimoReporteData.map(d => [d.curso, d.estudiante, d.notaFinal, d.estado]);
+        anchos = [22, 26, 12, 14];
+    }
+
+    var hoja = XLSX.utils.aoa_to_sheet([encabezados].concat(filas));
+    hoja['!cols'] = anchos.map(w => ({ wch: w }));
+
+    var libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, reporteActual === 'promedios' ? 'Promedios' : 'Listado de Notas');
+    XLSX.writeFile(libro, 'reporte_' + reporteActual + '.xlsx');
 }
 
 function exportarPDF() {

@@ -56,14 +56,14 @@ const editar = async (req, res) => {
     }
 
     try {
-        // 1. Obtener la sub-evaluación actual para encontrar su id_evaluacion padre
+        
         const [subEvalRows] = await db.promise().query('SELECT id_evaluacion FROM sub_evaluacion WHERE id_sub_evaluacion = ?', [id]);
         if (subEvalRows.length === 0) {
             return res.status(404).json({ error: 'Sub-evaluación no encontrada' });
         }
         const { id_evaluacion } = subEvalRows[0];
 
-        // 2. Validar que el nuevo porcentaje no exceda el 100%
+        
         const [filas] = await db.promise().query(
             'SELECT SUM(porcentaje) as total FROM sub_evaluacion WHERE id_evaluacion = ? AND id_sub_evaluacion != ?',
             [id_evaluacion, id]
@@ -75,7 +75,7 @@ const editar = async (req, res) => {
             return res.status(400).json({ error: `La suma de los porcentajes excedería el 100% (Restante disponible: ${100 - totalActual}%)` });
         }
 
-        // 3. Actualizar la sub-evaluación
+        
         await db.promise().query('UPDATE sub_evaluacion SET nombre = ?, porcentaje = ? WHERE id_sub_evaluacion = ?', [nombre, porcentaje, id]);
 
         res.json({ id_sub_evaluacion: Number(id), id_evaluacion, nombre, porcentaje });

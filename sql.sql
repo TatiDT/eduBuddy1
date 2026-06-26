@@ -3,7 +3,7 @@ USE sistema_educativo;
 
 
 CREATE TABLE estudiante (id_estudiante INT AUTO_INCREMENT PRIMARY KEY,rut VARCHAR(12) UNIQUE NOT NULL,nombre VARCHAR(100) NOT NULL,apellido VARCHAR(100) NOT NULL,correo VARCHAR(150) UNIQUE NOT NULL,
-    carrera VARCHAR(100) NOT NULL,fecha_ingreso DATE NOT NULL,estado ENUM('Activo','Inactivo') DEFAULT 'Activo');
+    carrera VARCHAR(100) NOT NULL,fecha_ingreso DATE NOT NULL,estado ENUM('Activo','Inactivo') DEFAULT 'Activo',foto VARCHAR(255) DEFAULT NULL);
 
 
 CREATE TABLE profesor (id_profesor INT AUTO_INCREMENT PRIMARY KEY,nombre VARCHAR(100) NOT NULL,apellido VARCHAR(100) NOT NULL,

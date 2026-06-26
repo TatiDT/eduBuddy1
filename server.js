@@ -3,10 +3,10 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.redirect('/login');
 });
 
 app.get('/login', (req, res) => {
@@ -48,7 +48,16 @@ app.use('/api/reportes', reportesRouter);
 
 const apuntesRouter = require('./routes/apuntes');
 app.use('/api/apuntes', apuntesRouter);
-// ── Arrancar servidor ────────────────────────────────────
+
+app.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    res.status(400).json({ error: 'La foto no puede superar los 2MB' });
+    return;
+  }
+  console.error(err);
+  res.status(500).json({ error: 'Error interno del servidor' });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor arriba en http://localhost:${PORT}`);
 });

@@ -21,7 +21,7 @@ const listar = (req, res) => {
 
 
 const agregar = (req, res) => {
-    const { codigo, nombre, creditos, modo_calculo, id_profesor } = req.body;
+    const { codigo, nombre, creditos, modo_calculo, id_profesor, id_estudiantes } = req.body;
 
     if (!codigo || !nombre || !creditos) {
         res.status(400).json({ error: 'Codigo, nombre y creditos son obligatorios' });
@@ -38,7 +38,25 @@ const agregar = (req, res) => {
                 res.status(500).json({ error: 'Error al registrar la materia' });
                 return;
             }
-            res.status(201).json({ id_curso: resultado.insertId, codigo, nombre, creditos, modo_calculo: modo, id_profesor: id_profesor || null });
+
+            const id_curso = resultado.insertId;
+            const respuesta = { id_curso, codigo, nombre, creditos, modo_calculo: modo, id_profesor: id_profesor || null };
+            const idsEstudiantes = Array.isArray(id_estudiantes) ? id_estudiantes : [];
+
+            if (idsEstudiantes.length === 0) {
+                res.status(201).json(respuesta);
+                return;
+            }
+
+            const fechaInscripcion = new Date().toISOString().slice(0, 10);
+            const valores = idsEstudiantes.map((idEstudiante) => [idEstudiante, id_curso, fechaInscripcion]);
+
+            db.query('INSERT IGNORE INTO inscripcion (id_estudiante, id_curso, fecha_inscripcion) VALUES ?', [valores], (err2) => {
+                if (err2) {
+                    console.error(err2);
+                }
+                res.status(201).json(respuesta);
+            });
         }
     );
 };

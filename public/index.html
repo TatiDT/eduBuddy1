@@ -16,7 +16,7 @@
       overflow: hidden;
     }
 
-    /* Burbujas */
+    
     .bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
     .bubble  { position: absolute; border-radius: 50%; opacity: .35; animation: floatUp linear infinite; }
     @keyframes floatUp {
@@ -24,7 +24,7 @@
       to   { transform: translateY(-15vh);  opacity: 0; }
     }
 
-    /* Card split */
+    
     .card {
       position: relative; z-index: 1;
       display: grid; grid-template-columns: 1fr 1fr;
@@ -34,7 +34,7 @@
       background: #fff;
     }
 
-    /* Panel izquierdo */
+    
     .panel-left {
       background: linear-gradient(160deg, #5BB8E8, #2E86C1);
       display: flex; flex-direction: column;
@@ -52,7 +52,7 @@
       color: rgba(255,255,255,.9); font-size: 1rem; max-width: 200px;
     }
 
-    /* Panel derecho */
+    
     .panel-right { padding: 52px 44px; display: flex; flex-direction: column; justify-content: center; }
 
     .welcome {
@@ -65,7 +65,7 @@
     }
     h1 span { color: #2E86C1; }
 
-    /* Campos */
+    
     .field { margin-bottom: 20px; }
     .field label {
       display: block; font-size: .78rem; font-weight: 500; text-transform: uppercase;
@@ -91,13 +91,13 @@
     .msg.err { color: #E74C3C; }
     .msg.ok  { color: #27AE60; }
 
-    /* Extras */
+    
     .extras { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; font-size: .82rem; }
     .extras label { display: flex; align-items: center; gap: 7px; color: #6B92A8; cursor: pointer; }
     .extras input { accent-color: #2E86C1; }
     .extras a { color: #2E86C1; font-weight: 500; text-decoration: none; }
 
-    /* Botón */
+    
     .btn-login {
       width: 100%; padding: 14px;
       background: linear-gradient(135deg, #5BB8E8, #2E86C1);
@@ -124,7 +124,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Toast */
+    
     .toast {
       position: fixed; bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(80px); opacity: 0;
@@ -152,7 +152,7 @@
 
 <div class="card">
   <div class="panel-left">
-    <img src="imge/edubuddy.png" alt="EduBuddy" onerror="this.style.display='none'"/>
+    <img src="Img/edubuddy.png" alt="EduBuddy" onerror="this.style.display='none'"/>
     <p>Tu compañero de aprendizaje siempre está aquí</p>
   </div>
 
@@ -198,7 +198,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // — Burbujas —
+  
   const colors = ['#B8DFF5','#5BB8E8','#D6EEF8','#2E86C1'];
   Array.from({ length: 22 }, () => {
     const b = Object.assign(document.createElement('div'), { className: 'bubble' });
@@ -207,7 +207,7 @@
     document.getElementById('bubbles').appendChild(b);
   });
 
-  // — Toggle password — muestra u oculta la contraseña y cambia el ícono del ojo
+  
   const pwd = document.getElementById('password');
   document.getElementById('togglePwd').addEventListener('click', () => {
     pwd.type = pwd.type === 'password' ? 'text' : 'password';
@@ -216,13 +216,13 @@
       : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   });
 
-  // — Validación — reglas que devuelven un mensaje de error o '' si el campo es válido
+  
   const rules = {
     email:    v => !v ? 'El correo es obligatorio.' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Correo inválido.' : '',
     password: v => !v ? 'La contraseña es obligatoria.' : v.length < 6 ? 'Mínimo 6 caracteres.' : ''
   };
 
-  // Valida un campo (email o password), pinta el input y muestra el mensaje correspondiente
+  
   function validate(id) {
     const input = document.getElementById(id);
     const msg   = document.getElementById(id === 'email' ? 'emailMsg' : 'passMsg');
@@ -230,7 +230,7 @@
     input.className = error ? 'err' : input.value ? 'ok' : '';
     msg.textContent = error || (input.value ? '✓ ' + (id === 'email' ? 'Correo válido' : 'Contraseña ingresada') : '');
     msg.className = 'msg ' + (error ? 'err' : 'ok');
-    return !error; // true si el campo pasó la validación
+    return !error; 
   }
 
   ['email', 'password'].forEach(id => {
@@ -239,7 +239,7 @@
     el.addEventListener('input', () => { el.className = ''; document.getElementById(id === 'email' ? 'emailMsg' : 'passMsg').className = 'msg'; });
   });
 
-  // — Toast — muestra un aviso temporal en la parte inferior de la pantalla
+  
   function toast(msg, isErr = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -247,9 +247,9 @@
     setTimeout(() => t.className = 'toast', 3200);
   }
 
-  // — Ripple + Submit — maneja el click del botón: efecto visual, valida campos y envía el login al backend
+  
   document.getElementById('btnLogin').addEventListener('click', async (e) => {
-    // Efecto ripple en el botón al hacer click
+    
     const btn = e.currentTarget;
     const r = Object.assign(document.createElement('span'), { className: 'ripple' });
     const rect = btn.getBoundingClientRect();
@@ -257,12 +257,12 @@
     btn.appendChild(r);
     setTimeout(() => r.remove(), 600);
 
-    // Valida ambos campos antes de continuar; si alguno falla, cancela el envío
+    
     const okEmail = validate('email');
     const okPass  = validate('password');
     if (!okEmail || !okPass) return toast('Corrige los errores antes de continuar.', true);
 
-    // Estado de carga: deshabilita el boton y muestra el spinner mientras espera la respuesta
+    
     const spinner = document.getElementById('spinner');
     const btnText = document.getElementById('btnText');
     btn.disabled = true;
@@ -270,19 +270,19 @@
     btnText.textContent = 'Verificando…';
 
     try {
-      // Envía las credenciales al endpoint de autenticacion
+      
       const res  = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: document.getElementById('email').value.trim(), password: pwd.value })
       });
 
-      // Parseo seguro: si la respuesta no es JSON válido, lanza error claro
+      
       let data = {};
       try { data = await res.json(); } catch (_) { throw new Error('El servidor no respondió correctamente. ¿Está corriendo node index.js?'); }
 
       if (res.ok) {
-        // Login exitoso: guarda el usuario para que el dashboard sepa quien inicio sesion
+        
         if (data.usuario) localStorage.setItem('eduBuddyUser', JSON.stringify(data.usuario));
         btnText.textContent = '¡Bienvenido!';
         spinner.style.display = 'none';
@@ -293,7 +293,7 @@
         throw new Error(data.error || 'Credenciales incorrectas');
       }
     } catch (err) {
-      // Error de red o credenciales: muestra mensaje y restablece boton
+      
       btn.disabled = false;
       spinner.style.display = 'none';
       btnText.textContent = 'Entrar a EduBuddy';

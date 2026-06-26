@@ -12,9 +12,12 @@ EduBuddy es una pagina web con funcionalidades academicas para Estudiantes, que 
 Tambien tiene una vista Para el pandel de administracion , que permite un CRUD completo para estudiantes , materias, profesores y evaluaciones. 
 
 Porfavor antes instalar las siguientes dependencias: 
+npm i
 ├── bcryptjs@3.0.3
-├── express@4.22.2
+├── express@5.2.1
+├── multer@2.2.0
 └── mysql2@3.22.5
+
 
 (dependencia externa-> gitbash)
 Ademas de levantar el servicio de XAMPP y copiar completo lo que esta dentro de sql.sql para poder tener acceso a la base de dato. 
@@ -68,9 +71,14 @@ eduBuddy1/
 │   ├── index.html                 # Pantalla de login (misma que login.html, servida en "/")
 │   ├── login.html                 # Pantalla de login, ruta /login
 │   ├── dashboard.html             # Panel del estudiante: notas, materias, evaluaciones, perfil
-│   └── img/                       # Logo y mascota usados en el login
+│   └── Img/                       # Logo y mascota usados en el login
 │
 └── views/
     └── admin.html                 # Panel del administrador: CRUD completo admin, materias, profesores y evaluaciones/notas
 
+
+MEJORAS: 
+Para las mejoras dadas por el docente se uso multer para que el estudiante cambie su foto de perfil.
+
+tambien se implemento middleware de manera general para la autenticacion y autorizacion de procesos
 

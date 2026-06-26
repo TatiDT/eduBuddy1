@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/profesorController');
+const { requireAdmin } = require('../middleware/auth');
+
+router.use(requireAdmin);
 
 router.get('/', controller.listar);
 router.post('/', controller.agregar);

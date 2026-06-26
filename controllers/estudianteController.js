@@ -12,7 +12,7 @@ const listar = (req, res) => {
         }
 
         const estudiantes = filas.map(
-            (fila) => new Estudiante(fila.id_estudiante, fila.rut, fila.nombre, fila.apellido, fila.correo, fila.carrera, fila.fecha_ingreso, fila.estado)
+            (fila) => new Estudiante(fila.id_estudiante, fila.rut, fila.nombre, fila.apellido, fila.correo, fila.carrera, fila.fecha_ingreso, fila.estado, fila.foto)
         );
         res.json(estudiantes);
     });
@@ -36,7 +36,7 @@ const agregar = (req, res) => {
                 return;
             }
 
-            const nuevo = new Estudiante(resultado.insertId, rut, nombre, apellido, correo, carrera, fecha_ingreso, estado || 'Activo');
+            const nuevo = new Estudiante(resultado.insertId, rut, nombre, apellido, correo, carrera, fecha_ingreso, estado || 'Activo', null);
             res.status(201).json(nuevo);
         }
     );
@@ -65,7 +65,11 @@ const editar = (req, res) => {
                 res.status(404).json({ error: 'Estudiante no encontrado' });
                 return;
             }
-            res.json(new Estudiante(id, rut, nombre, apellido, correo, carrera, fecha_ingreso, estado || 'Activo'));
+
+            db.query('SELECT foto FROM estudiante WHERE id_estudiante = ?', [id], (err2, filas) => {
+                const foto = err2 || filas.length === 0 ? null : filas[0].foto;
+                res.json(new Estudiante(id, rut, nombre, apellido, correo, carrera, fecha_ingreso, estado || 'Activo', foto));
+            });
         }
     );
 };
@@ -184,6 +188,29 @@ const guardarNota = (req, res) => {
     );
 };
 
+const subirFoto = (req, res) => {
+    const { id } = req.params;
+
+    if (!req.file) {
+        res.status(400).json({ error: 'La foto es obligatoria' });
+        return;
+    }
+
+    const foto = '/uploads/perfiles/' + req.file.filename;
+
+    db.query('UPDATE estudiante SET foto = ? WHERE id_estudiante = ?', [foto, id], (err, resultado) => {
+        if (err) {
+            res.status(500).json({ error: 'Error al guardar la foto' });
+            return;
+        }
+        if (resultado.affectedRows === 0) {
+            res.status(404).json({ error: 'Estudiante no encontrado' });
+            return;
+        }
+        res.json({ foto });
+    });
+};
+
 const eliminarNota = (req, res) => {
     const { id_estudiante, id_evaluacion } = req.params;
 
@@ -204,4 +231,4 @@ const eliminarNota = (req, res) => {
     );
 };
 
-module.exports = { listar, agregar, editar, eliminar, perfil, guardarNota, eliminarNota };
+module.exports = { listar, agregar, editar, eliminar, perfil, guardarNota, eliminarNota, subirFoto };

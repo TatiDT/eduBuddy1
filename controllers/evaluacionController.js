@@ -100,7 +100,7 @@ const eliminar = (req, res) => {
     const id_estudiante = req.query.id_estudiante || null;
 
     if (id_estudiante) {
-        // Estudiante: solo puede eliminar evaluaciones que él creó
+        
         db.query(
             'DELETE FROM evaluacion WHERE id_evaluacion = ? AND id_estudiante_creador = ?',
             [id, id_estudiante],
@@ -117,7 +117,7 @@ const eliminar = (req, res) => {
             }
         );
     } else {
-        // Admin: puede eliminar cualquiera
+        
         db.query('DELETE FROM evaluacion WHERE id_evaluacion = ?', [id], (err, resultado) => {
             if (err) {
                 res.status(500).json({ error: 'Error al eliminar la evaluacion' });

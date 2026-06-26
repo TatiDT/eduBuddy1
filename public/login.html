@@ -16,7 +16,7 @@
       overflow: hidden;
     }
 
-    /* Burbujas */
+    
     .bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
     .bubble  { position: absolute; border-radius: 50%; opacity: .35; animation: floatUp linear infinite; }
     @keyframes floatUp {
@@ -24,7 +24,7 @@
       to   { transform: translateY(-15vh);  opacity: 0; }
     }
 
-    /* Card split */
+    
     .card {
       position: relative; z-index: 1;
       display: grid; grid-template-columns: 1fr 1fr;
@@ -34,7 +34,7 @@
       background: #fff;
     }
 
-    /* Panel izquierdo */
+    
     .panel-left {
       background: linear-gradient(160deg, #5BB8E8, #2E86C1);
       display: flex; flex-direction: column;
@@ -42,7 +42,7 @@
       padding: 48px 32px; gap: 20px; text-align: center;
     }
     .panel-left img {
-      width: 220px;
+      width: 280px;
       filter: drop-shadow(0 8px 20px rgba(0,0,0,.22));
       animation: float 4s ease-in-out infinite;
     }
@@ -52,7 +52,7 @@
       color: rgba(255,255,255,.9); font-size: 1rem; max-width: 200px;
     }
 
-    /* Panel derecho */
+    
     .panel-right { padding: 52px 44px; display: flex; flex-direction: column; justify-content: center; }
 
     .welcome {
@@ -65,7 +65,7 @@
     }
     h1 span { color: #2E86C1; }
 
-    /* Campos */
+    
     .field { margin-bottom: 20px; }
     .field label {
       display: block; font-size: .78rem; font-weight: 500; text-transform: uppercase;
@@ -91,13 +91,19 @@
     .msg.err { color: #E74C3C; }
     .msg.ok  { color: #27AE60; }
 
-    /* Extras */
+    
     .extras { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; font-size: .82rem; }
     .extras label { display: flex; align-items: center; gap: 7px; color: #6B92A8; cursor: pointer; }
     .extras input { accent-color: #2E86C1; }
     .extras a { color: #2E86C1; font-weight: 500; text-decoration: none; }
 
-    /* Botón */
+
+    .field-row { display: flex; gap: 14px; }
+    .field-row .field { flex: 1; min-width: 0; }
+    .switch-modo { text-align: center; font-size: .85rem; color: #6B92A8; margin-top: 18px; }
+    .switch-modo a { color: #2E86C1; font-weight: 600; text-decoration: none; cursor: pointer; }
+
+    
     .btn-login {
       width: 100%; padding: 14px;
       background: linear-gradient(135deg, #5BB8E8, #2E86C1);
@@ -124,7 +130,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Toast */
+    
     .toast {
       position: fixed; bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(80px); opacity: 0;
@@ -140,7 +146,7 @@
     @media (max-width: 640px) {
       .card { grid-template-columns: 1fr; }
       .panel-left { padding: 32px 24px; }
-      .panel-left img { width: 160px; }
+      .panel-left img { width: 190px; }
       .panel-right { padding: 36px 28px; }
       h1 { font-size: 1.55rem; }
     }
@@ -152,13 +158,48 @@
 
 <div class="card">
   <div class="panel-left">
-    <img src="img/logoEdu.png" alt="EduBuddy" onerror="this.style.display='none'"/>
+    <img src="Img/logoEdu.png" alt="EduBuddy" onerror="this.style.display='none'"/>
     <p>Tu compañero de aprendizaje siempre está aquí</p>
   </div>
 
   <div class="panel-right">
-    <p class="welcome">Bienvenido de vuelta</p>
-    <h1>Inicia tu <span>sesión</span></h1>
+    <p class="welcome" id="welcomeText">Bienvenido de vuelta</p>
+    <h1 id="formTitle">Inicia tu <span>sesión</span></h1>
+
+    <div id="registroFields" style="display:none;">
+      <div class="field-row">
+        <div class="field">
+          <label for="reg-nombre">Nombre</label>
+          <div class="wrap">
+            <input type="text" id="reg-nombre" placeholder="Tu nombre"/>
+          </div>
+          <div class="msg" id="reg-nombreMsg"></div>
+        </div>
+        <div class="field">
+          <label for="reg-apellido">Apellido</label>
+          <div class="wrap">
+            <input type="text" id="reg-apellido" placeholder="Tu apellido"/>
+          </div>
+          <div class="msg" id="reg-apellidoMsg"></div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="reg-rut">RUT</label>
+          <div class="wrap">
+            <input type="text" id="reg-rut" placeholder="20111222-3"/>
+          </div>
+          <div class="msg" id="reg-rutMsg"></div>
+        </div>
+        <div class="field">
+          <label for="reg-carrera">Carrera</label>
+          <div class="wrap">
+            <input type="text" id="reg-carrera" placeholder="Tu carrera"/>
+          </div>
+          <div class="msg" id="reg-carreraMsg"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="field">
       <label for="email">Correo electrónico</label>
@@ -183,7 +224,7 @@
       <div class="msg" id="passMsg"></div>
     </div>
 
-    <div class="extras">
+    <div class="extras" id="extrasRow">
       <label><input type="checkbox"/> Recordarme</label>
       <a href="#">¿Olvidaste tu contraseña?</a>
     </div>
@@ -192,13 +233,15 @@
       <div class="spinner" id="spinner"></div>
       <span id="btnText">Entrar a EduBuddy</span>
     </button>
+
+    <p class="switch-modo" id="switchModo">¿No tienes cuenta? <a id="toggleModoLink">Regístrate</a></p>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  // — Burbujas —
+  
   const colors = ['#B8DFF5','#5BB8E8','#D6EEF8','#2E86C1'];
   Array.from({ length: 22 }, () => {
     const b = Object.assign(document.createElement('div'), { className: 'bubble' });
@@ -208,7 +251,7 @@
     document.getElementById('bubbles').appendChild(b);
   });
 
-  // — Toggle password — muestra u oculta la contraseña y cambia el ícono del ojo
+  
   const pwd = document.getElementById('password');
   document.getElementById('togglePwd').addEventListener('click', () => {
     pwd.type = pwd.type === 'password' ? 'text' : 'password';
@@ -217,30 +260,53 @@
       : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   });
 
-  // — Validación — reglas que devuelven un mensaje de error o '' si el campo es válido
-  const rules = {
-    email:    v => !v ? 'El correo es obligatorio.' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Correo inválido.' : '',
-    password: v => !v ? 'La contraseña es obligatoria.' : v.length < 6 ? 'Mínimo 6 caracteres.' : ''
-  };
 
-  // Valida un campo (email o password), pinta el input y muestra el mensaje correspondiente
+  const rules = {
+    email:        v => !v ? 'El correo es obligatorio.' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Correo inválido.' : '',
+    password:     v => !v ? 'La contraseña es obligatoria.' : v.length < 6 ? 'Mínimo 6 caracteres.' : '',
+    'reg-nombre':  v => !v ? 'El nombre es obligatorio.' : '',
+    'reg-apellido':v => !v ? 'El apellido es obligatorio.' : '',
+    'reg-rut':     v => !v ? 'El RUT es obligatorio.' : '',
+    'reg-carrera': v => !v ? 'La carrera es obligatoria.' : ''
+  };
+  const msgIdFor = { email: 'emailMsg', password: 'passMsg' };
+
+
   function validate(id) {
     const input = document.getElementById(id);
-    const msg   = document.getElementById(id === 'email' ? 'emailMsg' : 'passMsg');
+    const msg   = document.getElementById(msgIdFor[id] || id + 'Msg');
     const error = rules[id](input.value.trim());
     input.className = error ? 'err' : input.value ? 'ok' : '';
-    msg.textContent = error || (input.value ? '✓ ' + (id === 'email' ? 'Correo válido' : 'Contraseña ingresada') : '');
+    msg.textContent = error || (input.value ? '✓ Correcto' : '');
     msg.className = 'msg ' + (error ? 'err' : 'ok');
-    return !error; // true si el campo pasó la validación
+    return !error;
   }
 
-  ['email', 'password'].forEach(id => {
+  Object.keys(rules).forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('blur',  () => validate(id));
-    el.addEventListener('input', () => { el.className = ''; document.getElementById(id === 'email' ? 'emailMsg' : 'passMsg').className = 'msg'; });
+    el.addEventListener('input', () => { el.className = ''; document.getElementById(msgIdFor[id] || id + 'Msg').className = 'msg'; });
   });
 
-  // — Toast — muestra un aviso temporal en la parte inferior de la pantalla
+
+  let modoRegistro = false;
+  function toggleModo() {
+    modoRegistro = !modoRegistro;
+    document.getElementById('registroFields').style.display = modoRegistro ? 'block' : 'none';
+    document.getElementById('extrasRow').style.display = modoRegistro ? 'none' : 'flex';
+    document.getElementById('welcomeText').textContent = modoRegistro ? 'Únete a EduBuddy' : 'Bienvenido de vuelta';
+    document.getElementById('formTitle').innerHTML = modoRegistro ? 'Crea tu <span>cuenta</span>' : 'Inicia tu <span>sesión</span>';
+    document.getElementById('btnText').textContent = modoRegistro ? 'Crear cuenta' : 'Entrar a EduBuddy';
+    document.getElementById('switchModo').innerHTML = modoRegistro
+      ? '¿Ya tienes cuenta? <a id="toggleModoLink">Inicia sesión</a>'
+      : '¿No tienes cuenta? <a id="toggleModoLink">Regístrate</a>';
+    pwd.autocomplete = modoRegistro ? 'new-password' : 'current-password';
+  }
+  document.getElementById('switchModo').addEventListener('click', (e) => {
+    if (e.target.id === 'toggleModoLink') toggleModo();
+  });
+
+  
   function toast(msg, isErr = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -248,9 +314,9 @@
     setTimeout(() => t.className = 'toast', 3200);
   }
 
-  // — Ripple + Submit — maneja el click del botón: efecto visual, valida campos y envía el login al backend
+  
   document.getElementById('btnLogin').addEventListener('click', async (e) => {
-    // Efecto ripple en el botón al hacer click
+    
     const btn = e.currentTarget;
     const r = Object.assign(document.createElement('span'), { className: 'ripple' });
     const rect = btn.getBoundingClientRect();
@@ -258,29 +324,42 @@
     btn.appendChild(r);
     setTimeout(() => r.remove(), 600);
 
-    // Valida ambos campos antes de continuar; si alguno falla, cancela el envío
+
+    const camposRegistro = ['reg-nombre', 'reg-apellido', 'reg-rut', 'reg-carrera'];
     const okEmail = validate('email');
     const okPass  = validate('password');
-    if (!okEmail || !okPass) return toast('Corrige los errores antes de continuar.', true);
+    const okRegistro = !modoRegistro || camposRegistro.map(validate).every(Boolean);
+    if (!okEmail || !okPass || !okRegistro) return toast('Corrige los errores antes de continuar.', true);
 
-    // Estado de carga: deshabilita el boton y muestra el spinner mientras espera la respuesta
+
     const spinner = document.getElementById('spinner');
     const btnText = document.getElementById('btnText');
     btn.disabled = true;
     spinner.style.display = 'block';
-    btnText.textContent = 'Verificando…';
+    btnText.textContent = modoRegistro ? 'Creando cuenta…' : 'Verificando…';
 
     try {
-      // Envía las credenciales al endpoint de autenticacion
-      const res  = await fetch('/api/auth/login', {
+      const url = modoRegistro ? '/api/auth/registro' : '/api/auth/login';
+      const body = modoRegistro
+        ? {
+            nombre: document.getElementById('reg-nombre').value.trim(),
+            apellido: document.getElementById('reg-apellido').value.trim(),
+            rut: document.getElementById('reg-rut').value.trim(),
+            carrera: document.getElementById('reg-carrera').value.trim(),
+            correo: document.getElementById('email').value.trim(),
+            password: pwd.value
+          }
+        : { email: document.getElementById('email').value.trim(), password: pwd.value };
+
+      const res  = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: document.getElementById('email').value.trim(), password: pwd.value })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
 
       if (res.ok) {
-        // Login exitoso: guarda el usuario para que el dashboard sepa quien inicio sesion
+
         localStorage.setItem('eduBuddyUser', JSON.stringify(data.usuario));
         btnText.textContent = '¡Bienvenido!';
         spinner.style.display = 'none';
@@ -288,13 +367,13 @@
         const destino = data.usuario.rol === 'ADMIN' ? '/admin' : '/dashboard';
         setTimeout(() => location.href = destino, 1200);
       } else {
-        throw new Error(data.error || 'Credenciales incorrectas');
+        throw new Error(data.error || (modoRegistro ? 'No se pudo crear la cuenta' : 'Credenciales incorrectas'));
       }
     } catch (err) {
-      // Error de red o credenciales: muestra mensaje y restablece boton
+
       btn.disabled = false;
       spinner.style.display = 'none';
-      btnText.textContent = 'Entrar a EduBuddy';
+      btnText.textContent = modoRegistro ? 'Crear cuenta' : 'Entrar a EduBuddy';
       toast(err.message, true);
     }
   });

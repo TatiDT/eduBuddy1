@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/subEvaluacionController');
+const { requireAdmin } = require('../middleware/auth');
+
+router.use(requireAdmin);
 
 router.get('/:id_evaluacion/sub-evaluaciones', controller.listarPorEvaluacion);
 router.post('/sub-evaluaciones', controller.agregar);

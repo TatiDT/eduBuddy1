@@ -24,6 +24,12 @@ const obtenerDatosCompletos = async () => {
 };
 
 
+const filtrarCursosPorQuery = (cursos, idCursoQuery) => {
+    const idCursoFiltro = parseInt(idCursoQuery, 10);
+    if (!idCursoQuery || Number.isNaN(idCursoFiltro)) return cursos;
+    return cursos.filter(c => c.id_curso === idCursoFiltro);
+};
+
 const calcularNotaCurso = (id_curso, id_estudiante, data) => {
     const evalsCurso = data.evaluaciones.filter(e => e.id_curso === id_curso);
     if (evalsCurso.length === 0) return null;
@@ -40,7 +46,7 @@ const calcularNotaCurso = (id_curso, id_estudiante, data) => {
         if (recup) {
             notaEv = parseFloat(recup.calificacion);
         } else {
-            // 2. Ver si hay sub-evaluaciones
+            
             const subs = data.subEvaluaciones.filter(se => se.id_evaluacion === ev.id_evaluacion);
             if (subs.length > 0) {
                 let sumaSub = 0;
@@ -53,12 +59,12 @@ const calcularNotaCurso = (id_curso, id_estudiante, data) => {
                     }
                 }
                 if (subSumaPct > 0) {
-                    // Si el profesor no ha puesto todas las sub-notas, calculamos sobre lo que hay (opcional)
-                    // o asumimos que la nota es la suma ponderada actual. Aquí se asume la suma directa.
+                    
+                    
                     notaEv = sumaSub;
                 }
             } else {
-                // 3. Nota normal
+                
                 const notaNormal = data.notas.find(n => n.id_evaluacion === ev.id_evaluacion && n.id_estudiante === id_estudiante);
                 if (notaNormal) {
                     notaEv = parseFloat(notaNormal.calificacion);
@@ -72,7 +78,7 @@ const calcularNotaCurso = (id_curso, id_estudiante, data) => {
                 notaFinal += notaEv * (parseFloat(ev.porcentaje) / 100);
                 sumaPorcentajes += parseFloat(ev.porcentaje);
             } else {
-                // Si no tiene porcentaje, asumimos promedio simple (fallback)
+                
                 notaFinal += notaEv;
                 sumaPorcentajes += 1;
             }
@@ -84,12 +90,12 @@ const calcularNotaCurso = (id_curso, id_estudiante, data) => {
     const modoPorcentaje = evalsCurso.some(e => e.porcentaje);
 
     if (modoPorcentaje) {
-        // Si se usan porcentajes, la nota final es la suma ponderada.
-        // Si sumaPorcentajes < 100, esta es una nota parcial. Proyectarla puede ser engañoso.
-        // Devolvemos la suma ponderada tal cual. El frontend puede interpretarla.
+        
+        
+        
         return notaFinal;
     }
-    // Fallback para promedio simple
+    
     return notaFinal / sumaPorcentajes;
 };
 
@@ -97,8 +103,9 @@ const promediosPorCurso = async (req, res) => {
     try {
         const data = await obtenerDatosCompletos();
         const resultados = [];
+        const cursos = filtrarCursosPorQuery(data.cursos, req.query.id_curso);
 
-        for (let curso of data.cursos) {
+        for (let curso of cursos) {
             const inscritos = data.inscripciones.filter(i => i.id_curso === curso.id_curso);
             let sumaNotas = 0;
             let alumnosConNota = 0;
@@ -136,10 +143,11 @@ const notasDetalle = async (req, res) => {
     try {
         const data = await obtenerDatosCompletos();
         const resultados = [];
+        const cursos = filtrarCursosPorQuery(data.cursos, req.query.id_curso);
 
-        for (let curso of data.cursos) {
+        for (let curso of cursos) {
             const inscritos = data.inscripciones.filter(i => i.id_curso === curso.id_curso);
-            
+
             for (let insc of inscritos) {
                 const estudiante = data.estudiantes.find(e => e.id_estudiante === insc.id_estudiante);
                 const notaFinal = calcularNotaCurso(curso.id_curso, insc.id_estudiante, data);
