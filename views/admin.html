@@ -465,6 +465,12 @@
           <input type="number" id="eval-porcentaje" min="1" max="100" placeholder="Porcentaje % (ej: 30)"/>
           <input type="date" id="eval-fecha"/>
         </div>
+        <div class="form-row cols-2">
+          <select id="eval-modo-calculo">
+            <option value="directa">Nota directa</option>
+            <option value="sumativa">Nota sumativa (se compone de varios trabajos)</option>
+          </select>
+        </div>
         <div id="pct-hint" style="font-size:.8rem; color:#2E86C1; margin-bottom:8px; padding:6px 10px; background:#EAF5FC; border-radius:8px; display:block;"></div>
         <div class="form-actions">
           <button class="btn-primary" onclick="guardarEvaluacion()">Guardar</button>
@@ -515,12 +521,13 @@
     <p class="sub" id="modal-notas-sub"></p>
     
     <div id="sub-evals-container" style="display:none; margin-bottom: 20px; padding:15px; background:var(--light); border-radius:var(--radius);">
-      <h5 style="margin-bottom:10px;">Sub-criterios de evaluación (Opcional)</h5>
+      <h5 style="margin-bottom:10px;">Nota sumativa: trabajos que la componen</h5>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:10px;">Agrega cada trabajo con su porcentaje (deben sumar hasta 100% de esta evaluación). Si no agregas ninguno, la nota se ingresa de forma directa.</p>
       <div id="sub-evals-list" style="margin-bottom:10px;"></div>
       <div style="display:flex; gap:10px; align-items:center;">
-        <input type="text" id="new-sub-nombre" placeholder="Nombre criterio" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
+        <input type="text" id="new-sub-nombre" placeholder="Nombre del trabajo (ej: Trabajo 1)" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
         <input type="number" id="new-sub-pct" placeholder="%" style="width:70px; padding:8px; border-radius:8px; border:1px solid var(--border);">
-        <button class="add-btn" onclick="agregarSubEval()">Añadir criterio</button>
+        <button class="add-btn" onclick="agregarSubEval()">Añadir trabajo</button>
       </div>
     </div>
 
@@ -609,7 +616,7 @@ function actualizarCampoPorcentaje() {
 }
 
 function cargarTodo() {
-  Promise.all([
+  return Promise.all([
     fetch('/api/estudiantes').then(function(r){ return r.json(); }),
     fetch('/api/cursos').then(function(r){ return r.json(); }),
     fetch('/api/profesores').then(function(r){ return r.json(); }),
@@ -677,6 +684,7 @@ function limpiarFormulario(tipo) {
     document.getElementById('form-evaluacion-title').textContent = 'Nueva evaluacion';
     ['eval-nombre','eval-porcentaje','eval-fecha'].forEach(function(id){ document.getElementById(id).value = ''; });
     document.getElementById('eval-tipo').value = 'Prueba';
+    document.getElementById('eval-modo-calculo').value = 'directa';
   }
 }
 
@@ -961,6 +969,10 @@ function editarEvaluacion(id) {
   document.getElementById('eval-porcentaje').value = ev.porcentaje !== null && ev.porcentaje !== undefined ? parseFloat(ev.porcentaje) : '';
   actualizarCampoPorcentaje();
   document.getElementById('eval-fecha').value = String(ev.fecha).slice(0,10);
+  document.getElementById('eval-modo-calculo').value = 'directa';
+  fetch('/api/' + id + '/sub-evaluaciones').then(function(r){ return r.json(); }).then(function(subs){
+    if (subs && subs.length > 0) document.getElementById('eval-modo-calculo').value = 'sumativa';
+  });
   toggleForm('evaluacion', true);
 }
 
@@ -981,6 +993,7 @@ function guardarEvaluacion() {
     return;
   }
 
+  var modoCalculo = document.getElementById('eval-modo-calculo').value;
   var body = { id_curso: id_curso, nombre: nombre, tipo: tipo, porcentaje: porcentaje, fecha: fecha };
 
   var esEdicion = editandoEvaluacionId !== null;
@@ -991,9 +1004,16 @@ function guardarEvaluacion() {
     .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, body: d }; }); })
     .then(function(r){
       if (!r.ok) { showToast(r.body.error || 'No se pudo guardar la evaluacion', 'err'); return; }
-      cargarTodo();
-      showToast('Evaluacion guardada correctamente', 'ok');
+      var idEvaluacion = esEdicion ? editandoEvaluacionId : r.body.id_evaluacion;
       toggleForm('evaluacion', false);
+      cargarTodo().then(function(){
+        if (modoCalculo === 'sumativa') {
+          showToast('Evaluacion guardada. Configura los trabajos que la componen.', 'ok');
+          verNotas(idEvaluacion);
+        } else {
+          showToast('Evaluacion guardada correctamente', 'ok');
+        }
+      });
     })
     .catch(function(){ showToast('Error de red al guardar la evaluacion', 'err'); });
 }
